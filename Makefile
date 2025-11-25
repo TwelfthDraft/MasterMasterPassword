@@ -1,5 +1,3 @@
-# Licensed under MIT license, see LICENSE file #
-
 CC=gcc
 CFLAGS=
 INCFLAGS=-Isrc -Isrc/lonesha256/
@@ -7,7 +5,22 @@ INCFLAGS=-Isrc -Isrc/lonesha256/
 OBJDIR=obj
 SRCDIR=src
 
-all:
+TEST_DEP= $(SRCDIR)/tb_test.c \
+          $(SRCDIR)/tb_text_lib_test.c $(SRCDIR)/tb_text_lib_test.h \
+          $(SRCDIR)/tb_text_lib.c $(SRCDIR)/tb_text_lib.h
+
+TEST_SRC= $(SRCDIR)/tb_test.c \
+          $(SRCDIR)/tb_text_lib_test.c \
+          $(SRCDIR)/tb_text_lib.c
+
+all: test
+
+.PHONY: test
+test: tb_test
+	./tb_test
+
+tb_test: $(TEST_DEP)
+	$(CC) $(CFLAGS) $(INCFLAGS) $(TEST_SRC) -o tb_test
 
 sha_test: lonesha256_test
 	./lonesha256_test
@@ -17,3 +30,4 @@ lonesha256_test: $(SRCDIR)/lonesha256/test.c $(SRCDIR)/lonesha256/lonesha256.h
 
 clean:
 	rm -f lonesha256_test
+	rm -f tb_test
