@@ -130,6 +130,10 @@ text* from_padded(padded_text* padded) {
 }
 
 int check_text(text* x) {
+  if (x->text[TB_TEXT_SIZE - 1] != 0) {
+    return !SUCCESS;
+  }
+
   if (strlen(x->text) >= TB_TEXT_SIZE) {
     return !SUCCESS;
   }
