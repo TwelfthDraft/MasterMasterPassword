@@ -24,13 +24,6 @@ LONE_TEST := $(SRCDIR)/lonesha256/test.c
 LONE_HEAD := $(SRCDIR)/lonesha256/lonesha256.h
 
 all: test
-	echo "Main src:  " $(MAIN_SRC)
-	echo "Main head: " $(MAIN_HEAD)
-	echo "Test src:  " $(TEST_SRC)
-	echo "Test head: " $(TEST_HEAD)
-	echo "Both src:  " $(BOTH_SRC)
-	echo "Both head: " $(BOTH_HEAD)
-
 
 .PHONY: test
 test: tb_test
