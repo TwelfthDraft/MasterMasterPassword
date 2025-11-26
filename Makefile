@@ -5,28 +5,46 @@ INCFLAGS=-Isrc -Isrc/lonesha256/
 OBJDIR=obj
 SRCDIR=src
 
-TEST_DEP= $(SRCDIR)/tb_test.c \
-          $(SRCDIR)/tb_text_lib_test.c $(SRCDIR)/tb_text_lib_test.h \
-          $(SRCDIR)/tb_text_lib.c $(SRCDIR)/tb_text_lib.h
+MAIN_HEAD=
 
-TEST_SRC= $(SRCDIR)/tb_test.c \
-          $(SRCDIR)/tb_text_lib_test.c \
-          $(SRCDIR)/tb_text_lib.c
+MAIN_SRC=
+
+TEST_SRC  := $(wildcard $(SRCDIR)/*test*.c)
+TEST_HEAD := $(wildcard $(SRCDIR)/*test*.h)
+
+BOTH_SRC  := $(wildcard $(SRCDIR)/*.c)
+BOTH_SRC  := $(filter-out $(MAIN_SRC), $(BOTH_SRC))
+BOTH_SRC  := $(filter-out $(TEST_SRC), $(BOTH_SRC))
+
+BOTH_HEAD := $(wildcard $(SRCDIR)/*.h)
+BOTH_HEAD := $(filter-out $(MAIN_HEAD), $(BOTH_HEAD))
+BOTH_HEAD := $(filter-out $(TEST_HEAD), $(BOTH_HEAD))
+
+LONE_TEST := $(SRCDIR)/lonesha256/test.c
+LONE_HEAD := $(SRCDIR)/lonesha256/lonesha256.h
 
 all: test
+	echo "Main src:  " $(MAIN_SRC)
+	echo "Main head: " $(MAIN_HEAD)
+	echo "Test src:  " $(TEST_SRC)
+	echo "Test head: " $(TEST_HEAD)
+	echo "Both src:  " $(BOTH_SRC)
+	echo "Both head: " $(BOTH_HEAD)
+
 
 .PHONY: test
 test: tb_test
 	./tb_test
 
-tb_test: $(TEST_DEP)
-	$(CC) $(CFLAGS) $(INCFLAGS) $(TEST_SRC) -o tb_test
+tb_test: $(TEST_HEAD) $(BOTH_HEAD) $(TEST_SRC) $(BOTH_SRC) $(LONE_HEAD)
+	$(CC) $(CFLAGS) $(INCFLAGS) $(TEST_SRC) $(BOTH_SRC) -o tb_test
 
+.PHONY: sha_test
 sha_test: lonesha256_test
 	./lonesha256_test
 
-lonesha256_test: $(SRCDIR)/lonesha256/test.c $(SRCDIR)/lonesha256/lonesha256.h
-	$(CC) $(CFLAGS) $(INCFLAGS) $(SRCDIR)/lonesha256/test.c -o lonesha256_test
+lonesha256_test: $(LONE_TEST) $(LONE_HEAD)
+	$(CC) $(CFLAGS) $(INCFLAGS) $(LONE_TEST) -o lonesha256_test
 
 clean:
 	rm -f lonesha256_test
