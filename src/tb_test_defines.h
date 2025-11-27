@@ -4,7 +4,7 @@
 #define TEST_START    \
   int passes = 0;            \
   int tests = 0;             \
-  char str[TB_TEXT_SIZE + 3];
+  typedef char padded_str[TB_TEXT_SIZE + 3];
 
 #define TEST_END(name) \
   printf("%s:  %d / %d (%s)\n", name, passes, tests, passes == tests ? "PASS" : "FAIL"); \

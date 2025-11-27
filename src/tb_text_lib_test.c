@@ -6,6 +6,8 @@
 #include "tb_constants.h"
 #include "tb_test_defines.h"
 
+int test_str_lengths[] = {0, 1, 2, 50, TB_TEXT_SIZE - 2, TB_TEXT_SIZE - 1, TB_TEXT_SIZE, TB_TEXT_SIZE + 1, TB_TEXT_SIZE + 2, -1};
+
 int check_tb_strlen();
 int check_tb_strlen_single(int*, int*, char*);
 
@@ -33,15 +35,12 @@ int test_text_lib() {
 int check_tb_strlen() {
   TEST_START
 
-  create_str(str, 0);                check_tb_strlen_single(&tests, &passes, str);
-  create_str(str, 1);                check_tb_strlen_single(&tests, &passes, str);
-  create_str(str, 2);                check_tb_strlen_single(&tests, &passes, str);
-  create_str(str, 50);               check_tb_strlen_single(&tests, &passes, str);
-  create_str(str, TB_TEXT_SIZE - 2); check_tb_strlen_single(&tests, &passes, str);
-  create_str(str, TB_TEXT_SIZE - 1); check_tb_strlen_single(&tests, &passes, str);
-  create_str(str, TB_TEXT_SIZE);     check_tb_strlen_single(&tests, &passes, str);
-  create_str(str, TB_TEXT_SIZE + 1); check_tb_strlen_single(&tests, &passes, str);
-  create_str(str, TB_TEXT_SIZE + 2); check_tb_strlen_single(&tests, &passes, str);
+  padded_str str;
+
+  for (int i = 0; test_str_lengths[i] != -1; i++) {
+    create_str(str, test_str_lengths[i]);
+    check_tb_strlen_single(&tests, &passes, str);
+  }
 
   TEST_END("tb_strlen:   ");
 }
@@ -69,15 +68,12 @@ int check_tb_strlen_single(int* tests, int* passes, char* str) {
 int check_tb_settext() {
   TEST_START
 
-  create_str(str, 0);                check_tb_settext_single(&tests, &passes, str);
-  create_str(str, 1);                check_tb_settext_single(&tests, &passes, str);
-  create_str(str, 2);                check_tb_settext_single(&tests, &passes, str);
-  create_str(str, 50);               check_tb_settext_single(&tests, &passes, str);
-  create_str(str, TB_TEXT_SIZE - 2); check_tb_settext_single(&tests, &passes, str);
-  create_str(str, TB_TEXT_SIZE - 1); check_tb_settext_single(&tests, &passes, str);
-  create_str(str, TB_TEXT_SIZE);     check_tb_settext_single(&tests, &passes, str);
-  create_str(str, TB_TEXT_SIZE + 1); check_tb_settext_single(&tests, &passes, str);
-  create_str(str, TB_TEXT_SIZE + 2); check_tb_settext_single(&tests, &passes, str);
+  padded_str str;
+
+  for (int i = 0; test_str_lengths[i] != -1; i++) {
+    create_str(str, test_str_lengths[i]);
+    check_tb_settext_single(&tests, &passes, str);
+  }
 
   TEST_END("tb_settext:  ");
 }
