@@ -7,6 +7,10 @@ typedef struct _text {
   char text[TB_TEXT_SIZE];
 } text;
 
+// Initializes a text structure
+// Returns !SUCCESS on failure
+int tb_new_text(text*);
+
 // Gets the length of a string but only checks the first TB_TEXT_SIZE characters
 // Returns the length of the string (max TB_TEXT_SIZE)
 int tb_strlen(char* str);

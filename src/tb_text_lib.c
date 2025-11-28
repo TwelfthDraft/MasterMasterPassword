@@ -5,6 +5,11 @@
 
 #include <stdio.h>
 
+int tb_new_text(text* text) {
+  text->text[TB_TEXT_SIZE - 1] = 0;
+  return SUCCESS;
+}
+
 int tb_strlen(char* str) {
   for (int i = 0; i < TB_TEXT_SIZE; i++) {
     if (str[i] == 0) {
@@ -43,7 +48,27 @@ int tb_gettext(char* dst, size_t size, text* src) {
   return SUCCESS;
 }
 
-int tb_croptext(text* dst, int off, int len);
+int tb_croptext(text* dst, int off, int len) {
+  if (dst->text[TB_TEXT_SIZE - 1] != 0) {
+    return !SUCCESS;
+  }
+
+  if (off < 0 || len < 0) {
+    return !SUCCESS;
+  }
+
+  int dst_len = tb_strlen(dst->text);
+
+  if (dst_len < off + len) {
+    return !SUCCESS;
+  }
+
+  for (int i = 0, j = off; i < len + 1; i++, j++) {
+    dst->text[i] = dst->text[j];
+  }
+
+  return SUCCESS;
+}
 
 char* tb_tostr(text* src);
 
