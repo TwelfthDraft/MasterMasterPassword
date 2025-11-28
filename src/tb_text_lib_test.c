@@ -28,6 +28,9 @@ int check_tb_croptext_single(int*, int*, padded_str);
 int check_tb_tostr();
 int check_tb_tostr_single(int*, int*, padded_str);
 
+int check_tb_textcat();
+int check_tb_textcat_single(int*, int*, padded_str, padded_str);
+
 // Utility
 void create_str(char*, int);
 text* text_from_padded(padded_text*);
@@ -46,6 +49,7 @@ int test_text_lib() {
   pass &= check_tb_gettext() == SUCCESS;
   pass &= check_tb_croptext() == SUCCESS;
   pass &= check_tb_tostr() == SUCCESS;
+  pass &= check_tb_textcat() == SUCCESS;
 
   printf("text_lib: %s\n", pass ? "PASS" : "FAIL");
 
@@ -419,6 +423,101 @@ int check_tb_tostr_single(int* tests, int* passes, padded_str padded) {
 
   TB_SINGLE_TEST_END
 }
+
+int check_tb_textcat() {
+  TB_TEST_START
+
+  padded_str padded_src;
+  padded_str padded_dst;
+
+  for (int i = 0; test_str_lengths[i] != -1; i++) {
+    for (int j = 0; test_str_lengths[j] != -1; j++) {
+      create_str(padded_src, test_str_lengths[i]);
+      int len2 = test_str_lengths[j] - test_str_lengths[i];
+      len2 = len2 < 0 ? (-len2) : len2;
+      create_str(padded_dst, len2);
+      check_tb_textcat_single(&tests, &passes, padded_src, padded_dst);
+    }
+  }
+
+  TB_TEST_END("tb_textcat:  ");
+}
+
+int check_tb_textcat_single(int* tests, int* passes, padded_str padded_src, padded_str padded_dst) {
+  TB_SINGLE_TEST_START
+
+  if (padded_src == NULL || padded_dst == NULL) {
+    return !SUCCESS;
+  }
+
+  int src_len = tb_strlen(padded_src);
+  int dst_len = tb_strlen(padded_dst);
+
+  padded_text _src;
+  tb_new_text((text*) (&_src));
+  text* src = text_from_padded(&_src);
+  int result = tb_settext(src, padded_src);
+
+  int exp = src_len >= TB_TEXT_SIZE ? (!SUCCESS) : SUCCESS;
+
+  if (result != SUCCESS) {
+    if (exp != SUCCESS) {
+      (*passes)++;
+    }
+    return result == exp ? SUCCESS : (!SUCCESS);
+  }
+
+  padded_text _dst;
+  tb_new_text((text*) (&_dst));
+  text* dst = text_from_padded(&_dst);
+  result = tb_settext(dst, padded_dst);
+
+  exp = dst_len >= TB_TEXT_SIZE ? (!SUCCESS) : SUCCESS;
+
+  if (result != SUCCESS) {
+    if (exp != SUCCESS) {
+      (*passes)++;
+    }
+    return result == exp ? SUCCESS : (!SUCCESS);
+  }
+
+  exp = src_len + dst_len >= TB_TEXT_SIZE ? (!SUCCESS) : SUCCESS;
+
+  result = tb_textcat(dst, src);
+
+  if (result != exp) {
+    return !SUCCESS;
+  }
+
+  if (result == SUCCESS) {
+    int pass = 1;
+
+    for (int i = 0; i < dst_len && pass; i++) {
+      if (padded_dst[i] != dst->text[i]) {
+        pass = 0;
+        break;
+      }
+    }
+
+    for (int i = 0; i < src_len && pass; i++) {
+      if (padded_src[i] != dst->text[i + dst_len]) {
+        pass = 0;
+        break;
+      }
+    }
+
+    if (dst->text[dst_len + src_len] != 0) {
+      return !SUCCESS;
+    }
+
+    if (!pass) {
+      return !SUCCESS;
+    }
+  }
+
+  TB_SINGLE_TEST_END
+}
+
 
 void create_str(char* str, int len) {
   for (int i = 0; i < len; i++) {

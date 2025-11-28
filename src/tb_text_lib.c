@@ -92,5 +92,24 @@ char* tb_tostr(text* src) {
   return buffer;
 }
 
-int tb_textcat(text* dst, text* src);
+int tb_textcat(text* dst, text* src) {
+  if (dst->text[TB_TEXT_SIZE - 1] != 0) {
+    return !SUCCESS;
+  }
+
+  if (src->text[TB_TEXT_SIZE - 1] != 0) {
+    return !SUCCESS;
+  }
+
+  int dst_len = tb_strlen(dst->text);
+  int src_len = tb_strlen(src->text);
+
+  if (dst_len + src_len >= TB_TEXT_SIZE) {
+    return !SUCCESS;
+  }
+
+  strncat(dst->text, src->text, TB_TEXT_SIZE - dst_len);
+
+  return SUCCESS;
+}
 
