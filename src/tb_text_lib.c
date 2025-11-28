@@ -5,6 +5,11 @@
 
 #include <stdio.h>
 
+#define BUFFER_COUNT 16
+
+int tostr_counter = 0;
+char tostr_buffers[BUFFER_COUNT][TB_TEXT_SIZE];
+
 int tb_new_text(text* text) {
   text->text[TB_TEXT_SIZE - 1] = 0;
   return SUCCESS;
@@ -70,7 +75,22 @@ int tb_croptext(text* dst, int off, int len) {
   return SUCCESS;
 }
 
-char* tb_tostr(text* src);
+char* tb_tostr(text* src) {
+  if (src->text[TB_TEXT_SIZE - 1] != 0) {
+    return NULL;
+  }
+
+  int i = tostr_counter & 0xF;
+  tostr_counter++;
+
+  char* buffer = tostr_buffers[i];
+
+  strncpy(buffer, src->text, TB_TEXT_SIZE);
+
+  buffer[TB_TEXT_SIZE - 1] = 0;
+
+  return buffer;
+}
 
 int tb_textcat(text* dst, text* src);
 

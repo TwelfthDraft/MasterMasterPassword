@@ -25,6 +25,9 @@ int check_tb_gettext_single(int*, int*, padded_str);
 int check_tb_croptext();
 int check_tb_croptext_single(int*, int*, padded_str);
 
+int check_tb_tostr();
+int check_tb_tostr_single(int*, int*, padded_str);
+
 // Utility
 void create_str(char*, int);
 text* text_from_padded(padded_text*);
@@ -42,6 +45,7 @@ int test_text_lib() {
   pass &= check_tb_settext() == SUCCESS;
   pass &= check_tb_gettext() == SUCCESS;
   pass &= check_tb_croptext() == SUCCESS;
+  pass &= check_tb_tostr() == SUCCESS;
 
   printf("text_lib: %s\n", pass ? "PASS" : "FAIL");
 
@@ -249,7 +253,7 @@ int check_tb_croptext() {
     check_tb_croptext_single(&tests, &passes, padded);
   }
 
-  TB_TEST_END("tb_croptext:  ");
+  TB_TEST_END("tb_croptext: ");
 }
 
 int check_tb_croptext_single(int* tests, int* passes, padded_str padded) {
@@ -285,8 +289,8 @@ int check_tb_croptext_single(int* tests, int* passes, padded_str padded) {
         return !SUCCESS;
       }
 
-      int exp = (off < 0 || off > str_len || (off + len) < 0 || (off + len) > str_len) || (len < 0) || (len > str_len) ? (!SUCCESS) : SUCCESS;     
-      
+      int exp = (off < 0 || off > str_len || (off + len) < 0 || (off + len) > str_len) || (len < 0) || (len > str_len) ? (!SUCCESS) : SUCCESS;
+
       result = tb_croptext(dst, off, len);
 
       if (check_text(dst) != SUCCESS) {
@@ -306,9 +310,115 @@ int check_tb_croptext_single(int* tests, int* passes, padded_str padded) {
       }
     }
   }
-  
+
   TB_SINGLE_TEST_END
-} 
+}
+
+int check_tb_tostr() {
+  TB_TEST_START
+
+  padded_str padded;
+
+  for (int i = 0; test_str_lengths[i] != -1; i++) {
+    create_str(padded, test_str_lengths[i]);
+    check_tb_tostr_single(&tests, &passes, padded);
+  }
+
+  tests++;
+
+  int pass = 1;
+
+  char* test_string = "Test string";
+  char* overwrite_string = "Overwrite string";
+
+  text src;
+  tb_new_text(&src);
+  strcpy(src.text, test_string);
+
+  text overwrite;
+  tb_new_text(&overwrite);
+  strcpy(overwrite.text, overwrite_string);
+
+  for (int i = 0; i < 5 && pass; i++) {
+    for (int j = 0; j < i; j++) {
+      tb_tostr(&overwrite);
+    }
+
+    char* str = tb_tostr(&src);
+    if (str == NULL) {
+      return !SUCCESS;
+    }
+
+    for (int j = 0; j < 16 && pass; j++) {
+      char* over = tb_tostr(&overwrite);
+
+      if (strncmp(over, overwrite_string, TB_TEXT_SIZE) != 0) {
+        pass = 0;
+        continue;
+      }
+
+      char* exp = (j == 16 - 1) ? overwrite_string : test_string;
+      if (strncmp(str, exp, TB_TEXT_SIZE) != 0) {
+        pass = 0;
+        continue;
+      }
+    }
+
+  }
+
+  passes += pass;
+
+  TB_TEST_END("tb_tostr:    ");
+}
+
+int check_tb_tostr_single(int* tests, int* passes, padded_str padded) {
+  TB_SINGLE_TEST_START
+
+  if (padded == NULL) {
+    return !SUCCESS;
+  }
+
+  char* str = str_from_padded(padded, strlen(padded) + 1);
+
+  int str_len = strlen(str);
+  if (str_len >= TB_TEXT_SIZE) {
+    (*passes)++;
+    return SUCCESS;
+  }
+
+  padded_text _src;
+  tb_new_text((text*) (&_src));
+  text* src = text_from_padded(&_src);
+
+  int result = tb_settext(src, str);
+  if (result != SUCCESS) {
+    return !SUCCESS;
+  }
+
+  char* new_str = tb_tostr(src);
+
+  if (new_str == NULL) {
+    return !SUCCESS;
+  }
+
+  if (check_text(src) != SUCCESS) {
+    return !SUCCESS;
+  }
+
+  if (new_str == NULL) {
+    return !SUCCESS;
+  }
+
+  if (strncmp(new_str, str, TB_TEXT_SIZE) != 0) {
+    return !SUCCESS;
+  }
+
+  if (tb_strlen(str) >= TB_TEXT_SIZE) {
+    return !SUCCESS;
+  }
+
+  TB_SINGLE_TEST_END
+}
 
 void create_str(char* str, int len) {
   for (int i = 0; i < len; i++) {
