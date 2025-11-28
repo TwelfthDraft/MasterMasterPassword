@@ -34,11 +34,11 @@ int tb_gettext(char* dst, size_t size, text* src) {
     return !SUCCESS;
   }
 
-  if (tb_strlen(src->text) >= TB_TEXT_SIZE) {
+  if (tb_strlen(src->text) >= size) {
     return !SUCCESS;
   }
 
-  strncpy(dst, src->text, TB_TEXT_SIZE);
+  strncpy(dst, src->text, size);
 
   return SUCCESS;
 }

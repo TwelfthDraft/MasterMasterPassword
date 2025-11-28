@@ -8,15 +8,22 @@
 
 int test_str_lengths[] = {0, 1, 2, 50, TB_TEXT_SIZE - 2, TB_TEXT_SIZE - 1, TB_TEXT_SIZE, TB_TEXT_SIZE + 1, TB_TEXT_SIZE + 2, -1};
 
+char* padding = TB_PADDING;
+
 int check_tb_strlen();
 int check_tb_strlen_single(int*, int*, char*);
 
 int check_tb_settext();
-int check_tb_settext_single(int*, int*, char*);
+int check_tb_settext_single(int*, int*, padded_str);
+
+int check_tb_gettext();
+int check_tb_gettext_single(int*, int*, padded_str);
 
 // Utility
 void create_str(char*, int);
-text* from_padded(padded_text*);
+text* text_from_padded(padded_text*);
+char* str_from_padded(padded_str, int);
+int check_str(char*,int);
 int check_text(text*);
 
 int test_text_lib() {
@@ -26,6 +33,7 @@ int test_text_lib() {
 
   pass &= check_tb_strlen() == SUCCESS;
   pass &= check_tb_settext() == SUCCESS;
+  pass &= check_tb_gettext() == SUCCESS;
 
   printf("text_lib: %s\n", pass ? "PASS" : "FAIL");
 
@@ -33,24 +41,26 @@ int test_text_lib() {
 }
 
 int check_tb_strlen() {
-  TEST_START
+  TB_TEST_START
 
-  padded_str str;
+  padded_str padded;
 
   for (int i = 0; test_str_lengths[i] != -1; i++) {
-    create_str(str, test_str_lengths[i]);
-    check_tb_strlen_single(&tests, &passes, str);
+    create_str(padded, test_str_lengths[i]);
+    check_tb_strlen_single(&tests, &passes, padded);
   }
 
-  TEST_END("tb_strlen:   ");
+  TB_TEST_END("tb_strlen:   ");
 }
 
-int check_tb_strlen_single(int* tests, int* passes, char* str) {
-  SINGLE_TEST_START
+int check_tb_strlen_single(int* tests, int* passes, padded_str padded) {
+  TB_SINGLE_TEST_START
 
-  if (str == NULL) {
+  if (padded == NULL) {
     return !SUCCESS;
   }
+
+  char* str = str_from_padded(padded, strlen(padded) + 1);
 
   int len = strlen(str);
 
@@ -62,35 +72,37 @@ int check_tb_strlen_single(int* tests, int* passes, char* str) {
     return !SUCCESS;
   }
 
-  SINGLE_TEST_END
+  TB_SINGLE_TEST_END
 }
 
 int check_tb_settext() {
-  TEST_START
+  TB_TEST_START
 
-  padded_str str;
+  padded_str padded;
 
   for (int i = 0; test_str_lengths[i] != -1; i++) {
-    create_str(str, test_str_lengths[i]);
-    check_tb_settext_single(&tests, &passes, str);
+    create_str(padded, test_str_lengths[i]);
+    check_tb_settext_single(&tests, &passes, padded);
   }
 
-  TEST_END("tb_settext:  ");
+  TB_TEST_END("tb_settext:  ");
 }
 
-int check_tb_settext_single(int* tests, int* passes, char* str) {
-  SINGLE_TEST_START
+int check_tb_settext_single(int* tests, int* passes, padded_str padded) {
+  TB_SINGLE_TEST_START
 
-  if (str == NULL) {
+  if (padded == NULL) {
     return !SUCCESS;
   }
+
+  char* str = str_from_padded(padded, strlen(padded) + 1);
 
   int len = strlen(str);
 
   int exp = len >= TB_TEXT_SIZE ? (!SUCCESS) : SUCCESS;
 
   padded_text _dst;
-  text* dst = from_padded(&_dst);
+  text* dst = text_from_padded(&_dst);
   int result = tb_settext(dst, str);
 
   if (check_text(dst) != SUCCESS) {
@@ -107,12 +119,93 @@ int check_tb_settext_single(int* tests, int* passes, char* str) {
     }
   }
 
-  SINGLE_TEST_END
+  TB_SINGLE_TEST_END
 }
+
+
+int check_tb_gettext() {
+  TB_TEST_START
+
+  padded_str padded;
+
+  for (int i = 0; test_str_lengths[i] != -1; i++) {
+    create_str(padded, test_str_lengths[i]);
+    check_tb_gettext_single(&tests, &passes, padded);
+  }
+
+  TB_TEST_END("tb_gettext:  ");
+}
+
+int check_tb_gettext_single(int* tests, int* passes, padded_str padded) {
+  TB_SINGLE_TEST_START
+
+  if (padded == NULL) {
+    return !SUCCESS;
+  }
+
+  char* str = str_from_padded(padded, strlen(padded) + 1);
+
+  int len = strlen(str);
+  if (len >= TB_TEXT_SIZE) {
+    (*passes)++;
+    return SUCCESS;
+  }
+
+  padded_str _dst;
+  char* dst;
+
+  padded_text _src;
+  text* src = text_from_padded(&_src);
+  int result = tb_settext(src, str);
+
+  if (result != SUCCESS) {
+    return !SUCCESS;
+  }
+
+  for (int i = -1; i < 2; i++) {
+    int dst_size = len + i;
+    if (dst_size < 0) {
+      continue;
+    }
+
+    dst = str_from_padded(_dst, dst_size);
+
+    int exp = len >= dst_size ? (!SUCCESS) : SUCCESS;
+    result = tb_gettext(dst, dst_size, src);
+
+    if (exp == SUCCESS && check_str(dst, dst_size) != SUCCESS) {
+      return !SUCCESS;
+    }
+
+    if (check_text(src) != SUCCESS) {
+      return !SUCCESS;
+    }
+
+    if (result != exp) {
+      return !SUCCESS;
+    }
+
+    if (exp == SUCCESS) {
+      if (strncmp(dst, str, TB_TEXT_SIZE) != 0) {
+        return !SUCCESS;
+      }
+    }
+  }
+
+  TB_SINGLE_TEST_END
+}
+
 
 void create_str(char* str, int len) {
   for (int i = 0; i < len; i++) {
     str[i] = i;
+
+    str[i] &= 0x7F;
+
+    if (str[i] < ' ') {
+      str[i] += ' ';
+    }
+
     if (str[i] == 0) {
       str[i]++;
     }
@@ -120,9 +213,27 @@ void create_str(char* str, int len) {
   str[len] = 0;
 }
 
-text* from_padded(padded_text* padded) {
+text* text_from_padded(padded_text* padded) {
   strcpy(padded->text + TB_TEXT_SIZE, padding);
   return (text*) padded;
+}
+
+char* str_from_padded(padded_str padded, int len) {
+  strcpy(padded + len, padding);
+  return (char*) padded;
+}
+
+int check_str(char* str, int size) {
+  int len = strlen(str);
+  if (len >= TB_TEXT_SIZE + TB_STR_MARGIN) {
+    return !SUCCESS;
+  }
+
+  if (strcmp(str + size, padding) != 0) {
+    return !SUCCESS;
+  }
+
+  return SUCCESS;
 }
 
 int check_text(text* x) {
