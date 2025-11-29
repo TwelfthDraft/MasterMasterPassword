@@ -8,7 +8,9 @@
 #include "tb_constants.h"
 #include "tb_test_defines.h"
 
-int test_str_lengths[] = {0, 1, 2, 50, TB_TEXT_SIZE - 2, TB_TEXT_SIZE - 1, TB_TEXT_SIZE, TB_TEXT_SIZE + 1, TB_TEXT_SIZE + 2, -1};
+int test_str_lengths[] = {0, 1, 2, 50,
+                          (TB_TEXT_SIZE / 2) - 2, (TB_TEXT_SIZE / 2) - 1, (TB_TEXT_SIZE / 2), (TB_TEXT_SIZE / 2) + 1, (TB_TEXT_SIZE / 2) + 2,
+                          TB_TEXT_SIZE - 2, TB_TEXT_SIZE - 1, TB_TEXT_SIZE, TB_TEXT_SIZE + 1, TB_TEXT_SIZE + 2, -1};
 
 char* padding = TB_PADDING;
 
