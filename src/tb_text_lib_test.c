@@ -4,6 +4,7 @@
 #include <limits.h>
 
 #include "tb_text_lib.h"
+#include "tb_text_lib_test.h"
 #include "tb_constants.h"
 #include "tb_test_defines.h"
 
@@ -31,13 +32,6 @@ int check_tb_tostr_single(int*, int*, padded_str);
 int check_tb_textcat();
 int check_tb_textcat_single(int*, int*, padded_str, padded_str);
 
-// Utility
-void create_str(char*, int);
-text* text_from_padded(padded_text*);
-char* str_from_padded(padded_str, int);
-int check_str(char*,int);
-int check_text(text*);
-
 int test_text_lib() {
   printf("Testing:  text_lib\n");
 
@@ -51,7 +45,7 @@ int test_text_lib() {
   pass &= check_tb_tostr() == SUCCESS;
   pass &= check_tb_textcat() == SUCCESS;
 
-  printf("text_lib: %s\n", pass ? "PASS" : "FAIL");
+  printf("text_lib: %s\n\n", pass ? "PASS" : "FAIL");
 
   return pass ? SUCCESS : (!SUCCESS);
 }
@@ -521,16 +515,18 @@ int check_tb_textcat_single(int* tests, int* passes, padded_str padded_src, padd
 
 void create_str(char* str, int len) {
   for (int i = 0; i < len; i++) {
-    str[i] = i;
+    str[i] = i & 0x7F;
 
-    str[i] &= 0x7F;
-
-    if (str[i] < ' ') {
-      str[i] += ' ';
+    if (str[i] <= 32) {
+      str[i] += 48;
     }
 
     if (str[i] == 0) {
       str[i]++;
+    }
+
+    if (str[i] == 127) {
+      str[i] -= 48;
     }
   }
   str[len] = 0;

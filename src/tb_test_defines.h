@@ -26,10 +26,4 @@
 
 #define TB_PADDING ("PADDING")
 
-typedef char padded_str[TB_TEXT_SIZE + TB_STR_MARGIN + TB_PADDING_SIZE];
-
-typedef struct _padded_text {
-  char text[TB_TEXT_SIZE + TB_STR_MARGIN + TB_PADDING_SIZE];
-} padded_text;
-
 #endif
