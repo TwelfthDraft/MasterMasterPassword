@@ -554,42 +554,50 @@ int check_tb_text_to_hex_single(int* tests, int* passes, padded_str padded) {
   tb_new_text((text*) (&_src));
   text* src = text_from_padded(&_src);
 
-  for (int k = 0; k < 2; k++) {
-    text* input = k == 0 ? src : dst;
+  for (int j = 0; j < 2; j++) {
+    for (int k = 0; k < 2; k++) {
+      text* input = k == 0 ? src : dst;
 
-    int result = tb_settext(input, str);
+      int result = tb_settext(input, str);
 
-    if (result != SUCCESS) {
-      return !SUCCESS;
-    }
-
-    int input_len = tb_strlen(input->text);
-
-    int exp = input_len > 127 ? (!SUCCESS) : SUCCESS;
-
-    char buf[TB_TEXT_SIZE];
-
-    if (exp == SUCCESS) {
-      for (int i = 0, j = 0; i < TB_TEXT_SIZE - 1; i++, j += 2) {
-        if (input->text[i] == 0) {
-          buf[j] = 0;
-          break;
-        }
-        sprintf(buf + j, "%02x", input->text[i]);
-      }
-    }
-
-    buf[TB_TEXT_SIZE - 1] = 0;
-
-    result = tb_text_to_hex(dst, input);
-
-    if (result != exp) {
-      return !SUCCESS;
-    }
-
-    if (exp == SUCCESS) {
-      if (strncmp(buf, dst->text, TB_TEXT_SIZE) != 0) {
+      if (result != SUCCESS) {
         return !SUCCESS;
+      }
+
+      int input_len = tb_strlen(input->text);
+
+      int exp = input_len > 127 ? (!SUCCESS) : SUCCESS;
+
+      char buf[TB_TEXT_SIZE];
+
+      if (exp == SUCCESS) {
+        for (int i = 0, j = 0; i < TB_TEXT_SIZE - 1; i++, j += 2) {
+          if (input->text[i] == 0) {
+            buf[j] = 0;
+            break;
+          }
+          sprintf(buf + j, "%02x", input->text[i]);
+        }
+      }
+
+      buf[TB_TEXT_SIZE - 1] = 0;
+
+      if (j != 0 && input_len < TB_TEXT_SIZE) {
+        input->text[input_len] = 1;
+      }
+
+      result = tb_text_to_hex(dst, input, j == 0 ? -1 : input_len);
+
+      if (result != exp) {
+        return !SUCCESS;
+      }
+
+      if (exp == SUCCESS) {
+        for (int i = 0; i < input_len; i++) {
+          if (buf[i] != dst->text[i]) {
+            return !SUCCESS;
+          }
+        }
       }
     }
   }

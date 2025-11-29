@@ -115,8 +115,10 @@ int tb_textcat(text* dst, text* src) {
   return SUCCESS;
 }
 
-int tb_text_to_hex(text* dst, text* src) {
-  int src_len = tb_strlen(src->text);
+int tb_text_to_hex(text* dst, text* src, int src_len) {
+  if (src_len == -1) {
+    src_len = tb_strlen(src->text);
+  }
 
   if (src_len == 0) {
     dst->text[0] = 0;
