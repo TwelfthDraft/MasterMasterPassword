@@ -4,6 +4,8 @@
 #include "tb_text_lib.h"
 
 // Reads a line from a file into a text
+// Newlines can be {LF, CR, CR+LF, LF+CR}
+// LF + CR is disabled for stdin
 // Returns !SUCCESS on failure and if line is to long
 int tb_read_line(FILE*, text*);
 
