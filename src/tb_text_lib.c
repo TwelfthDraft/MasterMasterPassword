@@ -10,7 +10,8 @@
 int tostr_counter = 0;
 char tostr_buffers[BUFFER_COUNT][TB_TEXT_SIZE];
 
-char char_to_hex(int);
+char int_to_hex(int);
+int hex_to_int(char);
 
 int tb_new_text(text* text) {
   memset(text->text, 0, sizeof(text->text));
@@ -140,15 +141,50 @@ int tb_text_to_hex(text* dst, text* src, int src_len) {
 
   while (rem > 0) {
     char c = *(from--);
-    *(to--) = char_to_hex(c);
-    *(to--) = char_to_hex(c >> 4);
+    *(to--) = int_to_hex(c);
+    *(to--) = int_to_hex(c >> 4);
     rem--;
   }
 
   return SUCCESS;
 }
 
-char char_to_hex(int c) {
+int tb_hex_to_text(text* dst, text* src, int src_len) {
+  if (src_len == -1) {
+    src_len = tb_strlen(src->text);
+  }
+
+  if (src_len == 0) {
+    dst->text[0] = 0;
+    return SUCCESS;
+  }
+
+  if ((src_len & 0x1) == 1) {
+    return !SUCCESS;
+  }
+
+  int src_len_div_2 = src_len / 2;
+
+  char* from = src->text;
+  char* to = dst->text;
+
+  int rem = src_len_div_2;
+
+  while (rem > 0) {
+    int msb = hex_to_int(*(from++));
+    int lsb = hex_to_int(*(from++));
+    if (lsb == -1 || msb == -1) {
+      return !SUCCESS;
+    }
+    *(to++) = (msb << 4) + lsb;
+    rem--;
+  }
+  *(to) = 0;
+
+  return SUCCESS;
+}
+
+char int_to_hex(int c) {
   c = c & 0xF;
 
   if (c < 10) {
@@ -156,4 +192,18 @@ char char_to_hex(int c) {
   } else {
     return 'a' + c - 10;
   }
+}
+
+int hex_to_int(char c) {
+  int v = c & 0xFF;
+
+  if (v >= '0' && v <= '9') {
+    return v - '0';
+  } else if (v >= 'A' && v <= 'F') {
+    return v - 'A' + 10;
+  } else if (v >= 'a' && v <= 'f') {
+    return v - 'a' + 10;
+  }
+
+  return -1;
 }

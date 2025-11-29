@@ -37,9 +37,14 @@ char* tb_tostr(text* src);
 // Returns !SUCCESS if there is not sufficient space
 int tb_textcat(text* dst, text* src);
 
-// Converts a text into hex format
-// Set src_len to -1 to auto-set it to the sec length
+// Converts a text binary format into hex
+// Set src_len to -1 to auto-set
 // Returns !SUCCESS if there isn't enough space
 int tb_text_to_hex(text* dst, text* src, int src_len);
+
+// Converts a text from hex format to binary
+// Set src_len to -1 to auto-set
+// Returns !SUCCESS if there isn't enough space
+int tb_hex_to_text(text* dst, text* src, int src_len);
 
 #endif

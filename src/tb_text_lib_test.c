@@ -37,6 +37,9 @@ int check_tb_textcat_single(int*, int*, padded_str, padded_str);
 int check_tb_text_to_hex();
 int check_tb_text_to_hex_single(int*, int*, padded_str);
 
+int check_tb_hex_to_text();
+int check_tb_hex_to_text_single(int*, int*, int);
+
 int test_text_lib() {
   printf("Testing:  text_lib\n");
 
@@ -50,6 +53,7 @@ int test_text_lib() {
   pass &= check_tb_tostr() == SUCCESS;
   pass &= check_tb_textcat() == SUCCESS;
   pass &= check_tb_text_to_hex() == SUCCESS;
+  pass &= check_tb_hex_to_text() == SUCCESS;
 
   printf("text_lib: %s\n\n", pass ? "PASS" : "FAIL");
 
@@ -86,7 +90,7 @@ int check_tb_new_text() {
 
   passes += pass;
 
-  TB_TEST_END("tb_new_text: ");
+  TB_TEST_END("tb_new_text:    ");
 }
 
 int check_tb_strlen() {
@@ -99,7 +103,7 @@ int check_tb_strlen() {
     check_tb_strlen_single(&tests, &passes, padded);
   }
 
-  TB_TEST_END("tb_strlen:   ");
+  TB_TEST_END("tb_strlen:      ");
 }
 
 int check_tb_strlen_single(int* tests, int* passes, padded_str padded) {
@@ -134,7 +138,7 @@ int check_tb_settext() {
     check_tb_settext_single(&tests, &passes, padded);
   }
 
-  TB_TEST_END("tb_settext:  ");
+  TB_TEST_END("tb_settext:     ");
 }
 
 int check_tb_settext_single(int* tests, int* passes, padded_str padded) {
@@ -184,7 +188,7 @@ int check_tb_gettext() {
     check_tb_gettext_single(&tests, &passes, padded);
   }
 
-  TB_TEST_END("tb_gettext:  ");
+  TB_TEST_END("tb_gettext:     ");
 }
 
 int check_tb_gettext_single(int* tests, int* passes, padded_str padded) {
@@ -257,7 +261,7 @@ int check_tb_croptext() {
     check_tb_croptext_single(&tests, &passes, padded);
   }
 
-  TB_TEST_END("tb_croptext: ");
+  TB_TEST_END("tb_croptext:    ");
 }
 
 int check_tb_croptext_single(int* tests, int* passes, padded_str padded) {
@@ -372,7 +376,7 @@ int check_tb_tostr() {
 
   passes += pass;
 
-  TB_TEST_END("tb_tostr:    ");
+  TB_TEST_END("tb_tostr:       ");
 }
 
 int check_tb_tostr_single(int* tests, int* passes, padded_str padded) {
@@ -440,7 +444,7 @@ int check_tb_textcat() {
     }
   }
 
-  TB_TEST_END("tb_textcat:  ");
+  TB_TEST_END("tb_textcat:     ");
 }
 
 int check_tb_textcat_single(int* tests, int* passes, padded_str padded_src, padded_str padded_dst) {
@@ -566,6 +570,10 @@ int check_tb_text_to_hex_single(int* tests, int* passes, padded_str padded) {
 
       int input_len = tb_strlen(input->text);
 
+      //if (j == 1 && input_len < TB_TEXT_SIZE) {
+      //  input->text[input_len] = 1;
+     // }
+
       int exp = input_len > 127 ? (!SUCCESS) : SUCCESS;
 
       char buf[TB_TEXT_SIZE];
@@ -582,10 +590,6 @@ int check_tb_text_to_hex_single(int* tests, int* passes, padded_str padded) {
 
       buf[TB_TEXT_SIZE - 1] = 0;
 
-      if (j != 0 && input_len < TB_TEXT_SIZE) {
-        input->text[input_len] = 1;
-      }
-
       result = tb_text_to_hex(dst, input, j == 0 ? -1 : input_len);
 
       if (result != exp) {
@@ -593,7 +597,114 @@ int check_tb_text_to_hex_single(int* tests, int* passes, padded_str padded) {
       }
 
       if (exp == SUCCESS) {
-        for (int i = 0; i < input_len; i++) {
+        int dst_len = input_len / 2;
+        for (int i = 0; i < dst_len; i++) {
+          if (buf[i] != dst->text[i]) {
+            return !SUCCESS;
+          }
+        }
+      }
+    }
+  }
+
+  TB_SINGLE_TEST_END
+}
+
+int check_tb_hex_to_text() {
+  TB_TEST_START
+
+  for (int i = 0; test_str_lengths[i] != -1; i++) {
+    check_tb_hex_to_text_single(&tests, &passes, test_str_lengths[i]);
+  }
+
+  TB_TEST_END("tb_hex_to_text: ");
+}
+
+int check_tb_hex_to_text_single(int* tests, int* passes, int src_len) {
+  TB_SINGLE_TEST_START
+
+  char hex[] = "0123456789ABCDEFabcdef";
+  padded_str padded;
+
+  for (int i = 0; i < sizeof(padded); i++) {
+    int hex_len = sizeof(hex) - 1;
+    padded[i] = hex[i % hex_len];
+  }
+
+  padded[src_len] = 0;
+
+  char* str = str_from_padded(padded, strlen(padded) + 1);
+
+  if (src_len >= TB_TEXT_SIZE) {
+    (*passes)++;
+    return SUCCESS;
+  }
+
+  padded_text _dst;
+  tb_new_text((text*) (&_dst));
+  text* dst = text_from_padded(&_dst);
+
+  padded_text _src;
+  tb_new_text((text*) (&_src));
+  text* src = text_from_padded(&_src);
+
+  for (int j = 0; j < 2; j++) {
+    for (int k = 0; k < 2; k++) {
+      text* input = k == 0 ? src : dst;
+
+      int result = tb_settext(input, str);
+
+      if (result != SUCCESS) {
+        return !SUCCESS;
+      }
+
+      int input_len = src_len;
+
+      if (j != 0 && input_len < TB_TEXT_SIZE) {
+        input->text[input_len] = 1;
+      }
+
+      int invalid_char = 0;
+
+      for (int i = 0; i < input_len; i++) {
+        char c = input->text[i];
+
+        int valid = 0;
+        valid |= c >= '0' && c <= '9';
+        valid |= c >= 'A' && c <= 'F';
+        valid |= c >= 'a' && c <= 'f';
+
+        if (!valid) {
+          invalid_char = 1;
+          break;
+        }
+      }
+
+      int not_valid = ((input_len & 1) == 1) || invalid_char;
+
+      int exp = not_valid ? (!SUCCESS) : SUCCESS;
+
+      int input_len_div_2 = input_len / 2;
+
+      char buf[TB_TEXT_SIZE];
+
+      if (exp == SUCCESS) {
+        for (int i = 0, j = 0; i < input_len_div_2; i++, j += 2) {
+          int binary;
+          int read = sscanf(input->text + j, "%02x", &binary);
+          *(buf + i) = binary;
+        }
+       *(buf + input_len_div_2) = 0;
+      }
+
+      result = tb_hex_to_text(dst, input, j == 0 ? -1 : input_len);
+
+      if (result != exp) {
+        return !SUCCESS;
+      }
+
+      if (exp == SUCCESS) {
+        for (int i = 0; i < input_len_div_2; i++) {
           if (buf[i] != dst->text[i]) {
             return !SUCCESS;
           }
