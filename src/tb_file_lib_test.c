@@ -43,7 +43,7 @@ int check_tb_read_line_single(int* tests, int* passes) {
   padded_str _padded_strs[16];
   padded_str* padded_strs = _padded_strs;
 
-  int str_count;
+  int str_count = 0;
   for (int i = 0; i < 16 && test_str_lengths[i] != -1; i++) {
     create_str(padded_strs[i], test_str_lengths[i]);
     str_count++;
@@ -67,7 +67,7 @@ int check_tb_read_line_single(int* tests, int* passes) {
     return !SUCCESS;
   }
 
-  for (int i = 0; i <= str_count; i++) {
+  for (int i = 0; i < str_count; i++) {
     int exp = strlen(padded_strs[i]) >= TB_TEXT_SIZE ? (!SUCCESS) : SUCCESS;
 
     padded_text _dst;

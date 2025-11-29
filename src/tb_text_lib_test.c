@@ -71,7 +71,7 @@ int check_tb_new_text() {
   }
 
   for (int i = 0; i < sizeof(padded_text); i++) {
-    exp = i == (TB_TEXT_SIZE - 1) ? 0 : 1;
+    exp = i < TB_TEXT_SIZE ? 0 : 1;
     if (dst.text[i] != exp) {
       pass = 0;
       break;

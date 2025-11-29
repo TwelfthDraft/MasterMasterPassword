@@ -11,7 +11,7 @@ int tostr_counter = 0;
 char tostr_buffers[BUFFER_COUNT][TB_TEXT_SIZE];
 
 int tb_new_text(text* text) {
-  text->text[TB_TEXT_SIZE - 1] = 0;
+  memset(text->text, 0, sizeof(text->text));
   return SUCCESS;
 }
 
