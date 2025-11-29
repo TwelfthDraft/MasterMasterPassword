@@ -134,10 +134,13 @@ int tb_text_to_hex(text* dst, text* src) {
 
   *(to--) = 0;
 
-  while (from >= src->text) {
+  int rem = src_len;
+
+  while (rem > 0) {
     char c = *(from--);
     *(to--) = char_to_hex(c);
     *(to--) = char_to_hex(c >> 4);
+    rem--;
   }
 
   return SUCCESS;
