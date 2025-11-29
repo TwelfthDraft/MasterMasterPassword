@@ -37,4 +37,8 @@ char* tb_tostr(text* src);
 // Returns !SUCCESS if there is not sufficient space
 int tb_textcat(text* dst, text* src);
 
+// Converts a text into hex format
+// Returns !SUCCESS if there isn't enough space
+int tb_text_to_hex(text* dst, text* src);
+
 #endif

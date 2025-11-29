@@ -32,6 +32,9 @@ int check_tb_tostr_single(int*, int*, padded_str);
 int check_tb_textcat();
 int check_tb_textcat_single(int*, int*, padded_str, padded_str);
 
+int check_tb_text_to_hex();
+int check_tb_text_to_hex_single(int*, int*, padded_str);
+
 int test_text_lib() {
   printf("Testing:  text_lib\n");
 
@@ -44,6 +47,7 @@ int test_text_lib() {
   pass &= check_tb_croptext() == SUCCESS;
   pass &= check_tb_tostr() == SUCCESS;
   pass &= check_tb_textcat() == SUCCESS;
+  pass &= check_tb_text_to_hex() == SUCCESS;
 
   printf("text_lib: %s\n\n", pass ? "PASS" : "FAIL");
 
@@ -512,6 +516,84 @@ int check_tb_textcat_single(int* tests, int* passes, padded_str padded_src, padd
   TB_SINGLE_TEST_END
 }
 
+int check_tb_text_to_hex() {
+  TB_TEST_START
+
+  padded_str padded;
+
+  for (int i = 0; test_str_lengths[i] != -1; i++) {
+    create_str(padded, test_str_lengths[i]);
+    check_tb_text_to_hex_single(&tests, &passes, padded);
+  }
+
+  TB_TEST_END("tb_text_to_hex: ");
+}
+
+int check_tb_text_to_hex_single(int* tests, int* passes, padded_str padded) {
+  TB_SINGLE_TEST_START
+
+  if (padded == NULL) {
+    return !SUCCESS;
+  }
+
+  char* str = str_from_padded(padded, strlen(padded) + 1);
+
+  int len = strlen(str);
+  if (len >= TB_TEXT_SIZE) {
+    (*passes)++;
+    return SUCCESS;
+  }
+
+  padded_text _dst;
+  tb_new_text((text*) (&_dst));
+  text* dst = text_from_padded(&_dst);
+
+  padded_text _src;
+  tb_new_text((text*) (&_src));
+  text* src = text_from_padded(&_src);
+
+  for (int k = 0; k < 2; k++) {
+    text* input = k == 0 ? src : dst;
+
+    int result = tb_settext(input, str);
+
+    if (result != SUCCESS) {
+      return !SUCCESS;
+    }
+
+    int input_len = tb_strlen(input->text);
+
+    int exp = input_len > 127 ? (!SUCCESS) : SUCCESS;
+
+    char buf[TB_TEXT_SIZE];
+
+    if (exp == SUCCESS) {
+      for (int i = 0, j = 0; i < TB_TEXT_SIZE - 1; i++, j += 2) {
+        if (input->text[i] == 0) {
+          buf[j] = 0;
+          break;
+        }
+        sprintf(buf + j, "%02x", input->text[i]);
+      }
+    }
+
+    buf[TB_TEXT_SIZE - 1] = 0;
+
+    result = tb_text_to_hex(dst, input);
+
+    if (result != exp) {
+      return !SUCCESS;
+    }
+
+    if (exp == SUCCESS) {
+      if (strncmp(buf, dst->text, TB_TEXT_SIZE) != 0) {
+        return !SUCCESS;
+      }
+    }
+  }
+
+  TB_SINGLE_TEST_END
+}
 
 void create_str(char* str, int len) {
   for (int i = 0; i < len; i++) {

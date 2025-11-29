@@ -10,6 +10,8 @@
 int tostr_counter = 0;
 char tostr_buffers[BUFFER_COUNT][TB_TEXT_SIZE];
 
+char char_to_hex(int);
+
 int tb_new_text(text* text) {
   memset(text->text, 0, sizeof(text->text));
   return SUCCESS;
@@ -113,3 +115,40 @@ int tb_textcat(text* dst, text* src) {
   return SUCCESS;
 }
 
+int tb_text_to_hex(text* dst, text* src) {
+  int src_len = tb_strlen(src->text);
+
+  if (src_len == 0) {
+    dst->text[0] = 0;
+    return SUCCESS;
+  }
+
+  int src_len_by_2 = src_len * 2;
+
+  if (src_len_by_2 > 255) {
+    return !SUCCESS;
+  }
+
+  char* from = src->text + src_len - 1;
+  char* to = dst->text + src_len_by_2;
+
+  *(to--) = 0;
+
+  while (from >= src->text) {
+    char c = *(from--);
+    *(to--) = char_to_hex(c);
+    *(to--) = char_to_hex(c >> 4);
+  }
+
+  return SUCCESS;
+}
+
+char char_to_hex(int c) {
+  c = c & 0xF;
+
+  if (c < 10) {
+    return '0' + c;
+  } else {
+    return 'a' + c - 10;
+  }
+}
