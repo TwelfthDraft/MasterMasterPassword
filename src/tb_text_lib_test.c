@@ -90,7 +90,7 @@ int check_tb_new_text() {
 
   passes += pass;
 
-  TB_TEST_END("tb_new_text:    ");
+  TB_TEST_END("tb_new_text:      ");
 }
 
 int check_tb_strlen() {
@@ -103,7 +103,7 @@ int check_tb_strlen() {
     check_tb_strlen_single(&tests, &passes, padded);
   }
 
-  TB_TEST_END("tb_strlen:      ");
+  TB_TEST_END("tb_strlen:        ");
 }
 
 int check_tb_strlen_single(int* tests, int* passes, padded_str padded) {
@@ -138,7 +138,7 @@ int check_tb_settext() {
     check_tb_settext_single(&tests, &passes, padded);
   }
 
-  TB_TEST_END("tb_settext:     ");
+  TB_TEST_END("tb_settext:       ");
 }
 
 int check_tb_settext_single(int* tests, int* passes, padded_str padded) {
@@ -188,7 +188,7 @@ int check_tb_gettext() {
     check_tb_gettext_single(&tests, &passes, padded);
   }
 
-  TB_TEST_END("tb_gettext:     ");
+  TB_TEST_END("tb_gettext:       ");
 }
 
 int check_tb_gettext_single(int* tests, int* passes, padded_str padded) {
@@ -261,7 +261,7 @@ int check_tb_croptext() {
     check_tb_croptext_single(&tests, &passes, padded);
   }
 
-  TB_TEST_END("tb_croptext:    ");
+  TB_TEST_END("tb_croptext:      ");
 }
 
 int check_tb_croptext_single(int* tests, int* passes, padded_str padded) {
@@ -376,7 +376,7 @@ int check_tb_tostr() {
 
   passes += pass;
 
-  TB_TEST_END("tb_tostr:       ");
+  TB_TEST_END("tb_tostr:         ");
 }
 
 int check_tb_tostr_single(int* tests, int* passes, padded_str padded) {
@@ -444,7 +444,7 @@ int check_tb_textcat() {
     }
   }
 
-  TB_TEST_END("tb_textcat:     ");
+  TB_TEST_END("tb_textcat:       ");
 }
 
 int check_tb_textcat_single(int* tests, int* passes, padded_str padded_src, padded_str padded_dst) {
@@ -532,7 +532,7 @@ int check_tb_text_to_hex() {
     check_tb_text_to_hex_single(&tests, &passes, padded);
   }
 
-  TB_TEST_END("tb_text_to_hex: ");
+  TB_TEST_END("tb_text_to_hex:   ");
 }
 
 int check_tb_text_to_hex_single(int* tests, int* passes, padded_str padded) {
@@ -617,7 +617,7 @@ int check_tb_hex_to_text() {
     check_tb_hex_to_text_single(&tests, &passes, test_str_lengths[i]);
   }
 
-  TB_TEST_END("tb_hex_to_text: ");
+  TB_TEST_END("tb_hex_to_text:   ");
 }
 
 int check_tb_hex_to_text_single(int* tests, int* passes, int src_len) {
