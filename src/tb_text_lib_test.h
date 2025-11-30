@@ -1,5 +1,5 @@
-#ifndef TB_TEXT_LIB_TEST
-#define TB_TEXT_LIB_TEST
+#ifndef TB_TEXT_LIB_TEST_H
+#define TB_TEXT_LIB_TEST_H
 
 #include "tb_test_defines.h"
 #include "tb_text_lib.h"

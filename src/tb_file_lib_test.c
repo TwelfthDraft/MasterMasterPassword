@@ -40,7 +40,7 @@ int check_tb_read_line() {
 
   remove("tmp.dat");
 
-  TB_TEST_END("tb_read_line:  ");
+  TB_TEST_END("tb_read_line:   ");
 }
 
 int check_tb_read_line_single(int* tests, int* passes, char* newline, int dos_end) {
