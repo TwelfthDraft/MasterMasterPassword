@@ -19,4 +19,8 @@ int tb_digest_to_hex(text* dst, digest* src);
 // Returns !SUCCESS if the text doesn't contain a 64 hex character string
 int tb_hex_to_digest(digest* dst, text* src);
 
+// Converts a text into a digest with SHA256
+// Returns SUCCESS
+int tb_text_to_digest(digest* dst, text* src, int src_len);
+
 #endif
