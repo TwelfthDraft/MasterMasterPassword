@@ -7,6 +7,9 @@
 #define LONESHA256_IMPLEMENTATION 1
 #include "lonesha256/lonesha256.h"
 
+#define TB_WORDS_IMPLEMENTATION 1
+#include "tb_words.h"
+
 int tb_new_digest(digest* digest) {
   int result = tb_new_text(digest);
   return result;
@@ -34,4 +37,12 @@ int tb_mix_digests(digest* dst, digest* src1, digest* src2) {
   memcpy(msg.text + DIGEST_SIZE, src2->text, DIGEST_SIZE);
 
   return tb_text_to_digest(dst, &msg, DIGEST_SIZE * 2);
+}
+
+char* tb_get_word(int index) {
+  if (index < 0 || index >= 1024) {
+    return NULL;
+  }
+
+  return tb_words[index];
 }

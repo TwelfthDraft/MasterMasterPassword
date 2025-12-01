@@ -9,6 +9,8 @@
 
 #include "tb_text_lib_test.h"
 
+#include "tb_words.h"
+
 int check_tb_new_digest();
 
 int check_tb_digest_to_hex();
@@ -20,6 +22,8 @@ int check_tb_hex_to_digest_single(int* tests, int* passes, int length, int hex_o
 int check_tb_text_to_digest();
 
 int check_tb_mix_digests();
+
+int check_tb_get_word();
 
 int sha256_vector_lengths[] = {
     0, 1, 2, 3, 4,
@@ -238,6 +242,7 @@ int test_crypt_lib() {
   pass &= check_tb_hex_to_digest() == SUCCESS;
   pass &= check_tb_text_to_digest() == SUCCESS;
   pass &= check_tb_mix_digests() == SUCCESS;
+  pass &= check_tb_get_word() == SUCCESS;
 
   printf("crypt_lib: %s\n\n", pass ? "PASS" : "FAIL");
 
@@ -479,5 +484,32 @@ int check_tb_mix_digests() {
 
   passes += pass;
 
-  TB_TEST_END("tb_mix_digests:");
+  TB_TEST_END("tb_mix_digests:   ");
+}
+
+int check_tb_get_word() {
+  TB_TEST_START
+
+  tests++;
+
+  int pass = 1;
+
+  for (int i = -50; i < 1024 + 50; i++) {
+    char* exp = (i < 0 || i > 1023) ? NULL : tb_words[i];
+
+    char* actual = tb_get_word(i);
+
+    if (exp == NULL && actual == NULL) {
+      continue;
+    }
+
+    if (exp == NULL || actual == NULL || strcmp(exp, tb_get_word(i)) != 0) {
+      pass = 0;
+      break;
+    }
+  }
+
+  passes += pass;
+
+  TB_TEST_END("tb_get_word:      ");
 }

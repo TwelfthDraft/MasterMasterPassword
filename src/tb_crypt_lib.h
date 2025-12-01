@@ -27,4 +27,8 @@ int tb_text_to_digest(digest* dst, text* src, int src_len);
 // Returns SUCCECSS
 int tb_mix_digests(digest* dst, digest* src1, digest* src2);
 
+// Gets a word from the word list
+// Returns NULL for words outside 0-1023 range
+char* tb_get_word(int index);
+
 #endif
