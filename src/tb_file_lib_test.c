@@ -14,6 +14,8 @@ int tb_read_line(FILE* fp, text* dst);
 int check_tb_read_line();
 int check_tb_read_line_single(int*, int*, char*, int);
 
+FILE* create_file_from_string(char* msg);
+
 int test_file_lib() {
   printf("Testing:  file_lib\n");
 
@@ -38,8 +40,6 @@ int check_tb_read_line() {
     }
   }
 
-  remove("tmp.dat");
-
   TB_TEST_END("tb_read_line:     ");
 }
 
@@ -58,26 +58,30 @@ int check_tb_read_line_single(int* tests, int* passes, char* newline, int dos_en
   create_str(padded_strs[i], 50);
   str_count++;
 
-  FILE* fp = fopen("tmp.dat", "wb");
-  if (fp == NULL) {
-    fprintf(stderr, "Unable to open file for testing\n");
+  int total_str_length = 0;
+  for (int i = 0; i < str_count; i++) {
+    total_str_length += strlen(padded_strs[i]) + 1;
+  }
+
+  char file_str[TB_TEXT_SIZE * 11];
+
+  if (total_str_length >= sizeof(file_str)) {
+    fprintf(stderr, "Insufficient space to store input strings\n");
     return !SUCCESS;
   }
 
+  file_str[0] = 0;
+
   for (int i = 0; i < str_count; i++) {
-    fprintf(fp, "%s", padded_strs[i]);
+    int pos = strlen(file_str);
+    sprintf(file_str + pos, "%s", padded_strs[i]);
     if ((!dos_end) || i < str_count - 1) {
-      fprintf(fp, "%s", newline);
+      int pos = strlen(file_str);
+      sprintf(file_str + pos, "%s", newline);
     }
   }
 
-  fclose(fp);
-
-  fp = fopen("tmp.dat", "rb");
-  if (fp == NULL) {
-    fprintf(stderr, "Unable to open file for testing\n");
-    return !SUCCESS;
-  }
+  FILE* fp = create_file_from_string(file_str);
 
   for (int i = 0; i < str_count; i++) {
     int exp = strlen(padded_strs[i]) >= TB_TEXT_SIZE ? (!SUCCESS) : SUCCESS;
@@ -121,3 +125,16 @@ int check_tb_read_line_single(int* tests, int* passes, char* newline, int dos_en
   TB_SINGLE_TEST_END
 }
 
+FILE* create_file_from_string(char* msg) {
+  FILE *fp = tmpfile();
+
+  if (fp == NULL) {
+    return NULL;
+  }
+
+  fprintf(fp, "%s", msg);
+
+  rewind(fp);
+
+  return fp;
+}
