@@ -46,3 +46,32 @@ char* tb_get_word(int index) {
 
   return tb_words[index];
 }
+
+int tb_find_word(char* word) {
+  if (word == NULL) {
+    return -1;
+  }
+
+  int start = 0;
+  int end = 1023;
+
+  while (start <= end) {
+    int mid = (start + end + 1) / 2;
+
+    char* mid_word = tb_words[mid];
+
+    int comp = strncmp(mid_word, word, 5);
+
+    if (comp == 0) {
+      return mid;
+    }
+
+    if (comp > 0) {
+      end = mid - 1;
+    } else {
+      start = mid + 1;
+    }
+  }
+
+  return -1;
+}

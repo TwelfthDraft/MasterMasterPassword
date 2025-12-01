@@ -31,4 +31,8 @@ int tb_mix_digests(digest* dst, digest* src1, digest* src2);
 // Returns NULL for words outside 0-1023 range
 char* tb_get_word(int index);
 
+// Finds a word in the word list
+// Returns the index of the word, or -1 if the word isn't in the list
+int tb_find_word(char* word);
+
 #endif

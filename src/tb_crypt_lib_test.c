@@ -25,6 +25,8 @@ int check_tb_mix_digests();
 
 int check_tb_get_word();
 
+int check_tb_find_word();
+
 int sha256_vector_lengths[] = {
     0, 1, 2, 3, 4,
     16, 16, 16, 16, 16, 16, 16, 16, 32, 32, 32, 32, 32, 32, 32, 32,
@@ -243,6 +245,7 @@ int test_crypt_lib() {
   pass &= check_tb_text_to_digest() == SUCCESS;
   pass &= check_tb_mix_digests() == SUCCESS;
   pass &= check_tb_get_word() == SUCCESS;
+  pass &= check_tb_find_word() == SUCCESS;
 
   printf("crypt_lib: %s\n\n", pass ? "PASS" : "FAIL");
 
@@ -512,4 +515,49 @@ int check_tb_get_word() {
   passes += pass;
 
   TB_TEST_END("tb_get_word:      ");
+}
+
+int check_tb_find_word() {
+  TB_TEST_START
+
+  tests++;
+
+  int pass = 1;
+
+  for (int i = 0; i < 1024; i++) {
+    int index = tb_find_word(tb_words[i]);
+
+    if (index != i) {
+      pass = 0;
+      break;
+    }
+  }
+
+  passes += pass;
+
+  tests++;
+
+  pass = 1;
+
+  for (int i = 0; pass && i < 1024; i++) {
+    char* word = tb_words[i];
+    int word_len = strlen(word);
+
+    for (int j = 0; j < word_len; j++) {
+      char word_copy[6];
+      strcpy(word_copy, word);
+      word_copy[j]++;
+
+      int index = tb_find_word(word_copy);
+
+      if (index != -1 && strncmp(word_copy, tb_words[index], 5) != 0) {
+          pass = 0;
+          break;
+      }
+    }
+  }
+
+  passes += pass;
+
+  TB_TEST_END("tb_find_word:     ");
 }
