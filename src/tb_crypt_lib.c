@@ -26,3 +26,12 @@ int tb_hex_to_digest(digest* dst, text* src) {
 int tb_text_to_digest(digest* dst, text* src, int src_len) {
   return lonesha256(dst->text, src->text, src_len) == 0 ? SUCCESS : (!SUCCESS);
 }
+
+int tb_mix_digests(digest* dst, digest* src1, digest* src2) {
+  text msg;
+
+  memcpy(msg.text, src1->text, DIGEST_SIZE);
+  memcpy(msg.text + DIGEST_SIZE, src2->text, DIGEST_SIZE);
+
+  return tb_text_to_digest(dst, &msg, DIGEST_SIZE * 2);
+}

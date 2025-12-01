@@ -23,4 +23,8 @@ int tb_hex_to_digest(digest* dst, text* src);
 // Returns SUCCESS
 int tb_text_to_digest(digest* dst, text* src, int src_len);
 
+// Computes the digest of the concatenatation of two input digests
+// Returns SUCCECSS
+int tb_mix_digests(digest* dst, digest* src1, digest* src2);
+
 #endif
