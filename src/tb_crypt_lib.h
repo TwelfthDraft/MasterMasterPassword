@@ -35,4 +35,13 @@ char* tb_get_word(int index);
 // Returns the index of the word, or -1 if the word isn't in the list
 int tb_find_word(char* word);
 
+// Prompts user to enter a word and appends the word on success
+// A minus '-' symbol is added between words
+// Retures SUCCESS if a valid word is entered or the text runs out of space
+int _tb_prompt_word(FILE* in, FILE* out, int word_num, text* word, text* words);
+
+// Prompts the user to enter a word and appends the word on success
+// This is the same as _tb_prompt_word with stdin and stdout used as in and out
+int tb_prompt_word(int word_num, text* word, text* words);
+
 #endif

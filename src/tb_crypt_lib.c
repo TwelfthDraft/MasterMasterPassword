@@ -3,6 +3,7 @@
 #include "tb_constants.h"
 
 #include "tb_crypt_lib.h"
+#include "tb_file_lib.h"
 
 #define LONESHA256_IMPLEMENTATION 1
 #include "lonesha256/lonesha256.h"
@@ -74,4 +75,46 @@ int tb_find_word(char* word) {
   }
 
   return -1;
+}
+
+int _tb_prompt_word(FILE* in, FILE* out, int word_num, text* word, text* words) {
+  if (in == NULL || out == NULL || feof(in) || feof(out)) {
+    return !SUCCESS;
+  }
+
+  tb_new_text(word);
+
+  fprintf(out, "Please enter word %d\n", word_num);
+
+  if (tb_read_line(in, word) != SUCCESS) {
+    fprintf(out, "Failed to read line\n");
+    return !SUCCESS;
+  }
+
+  if (tb_find_word(word->text) == -1) {
+    fprintf(out, "Unknown word %s\n", word->text);
+    return !SUCCESS;
+  }
+
+  if (words != NULL) {
+    text minus;
+    tb_new_text(&minus);
+    strncpy(minus.text, "-", 2);
+
+    if (words->text[0] != 0) {
+      if (tb_textcat(words, &minus) != SUCCESS) {
+        return !SUCCESS;
+      }
+    }
+
+    if (tb_textcat(words, word) != SUCCESS) {
+      return !SUCCESS;
+    }
+  }
+
+  return SUCCESS;
+}
+
+int tb_prompt_word(int word_num, text* word, text* words) {
+  return _tb_prompt_word(stdin, stdout, word_num, word, words);
 }

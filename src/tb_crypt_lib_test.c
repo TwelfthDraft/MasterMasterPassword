@@ -27,6 +27,8 @@ int check_tb_get_word();
 
 int check_tb_find_word();
 
+int check_tb_prompt_word();
+
 int sha256_vector_lengths[] = {
     0, 1, 2, 3, 4,
     16, 16, 16, 16, 16, 16, 16, 16, 32, 32, 32, 32, 32, 32, 32, 32,
@@ -246,6 +248,7 @@ int test_crypt_lib() {
   pass &= check_tb_mix_digests() == SUCCESS;
   pass &= check_tb_get_word() == SUCCESS;
   pass &= check_tb_find_word() == SUCCESS;
+  pass &= check_tb_prompt_word() == SUCCESS;
 
   printf("crypt_lib: %s\n\n", pass ? "PASS" : "FAIL");
 
@@ -560,4 +563,145 @@ int check_tb_find_word() {
   passes += pass;
 
   TB_TEST_END("tb_find_word:     ");
+}
+
+int check_tb_prompt_word() {
+  TB_TEST_START
+
+  tests++;
+
+  int pass = 0;
+
+  FILE* in = tmpfile();
+  FILE* out = tmpfile();
+
+  if (out != NULL && in != NULL) {
+    pass = 1;
+
+    int vectors = 1024 + 26 + 1 + 4 + 1;
+    char test_vectors[vectors][6];
+    int exp[vectors];
+
+    int j = 0;
+
+    for (int i = 0; i < 1024; i++) {
+      sprintf(test_vectors[j], "%s", tb_words[i]);
+      exp[j] = SUCCESS;
+      j++;
+    }
+
+    for (int i = 0; i < 26; i++) {
+      char c = 'a' + i;
+      sprintf(test_vectors[j], "%c%c%c%c%c", c, c, c, c, c);
+      exp[j] = !SUCCESS;
+      j++;
+    }
+
+    sprintf(test_vectors[j], "%s", tb_words[0]);
+    exp[j] = SUCCESS;
+    j++;
+
+
+    for (int i = 0; i < 4; i++) {
+      test_vectors[j][0] = 0;
+      exp[j] = !SUCCESS;
+      j++;
+    }
+
+    sprintf(test_vectors[j], "%s", tb_words[1]);
+    exp[j] = SUCCESS;
+    j++;
+
+    char* newlines[] = {"\n", "\r", "\n\r", "\r\n"};
+
+    for (int k = 0; k < 4; k++) {
+      for (int i = 0; i < vectors; i++) {
+        char* newline = newlines[k];
+        fprintf(in, "%s%s", test_vectors[i], newline);
+      }
+    }
+
+    rewind(in);
+
+    if (vectors != j) {
+      pass = 0;
+    }
+
+    text minus;
+    tb_new_text(&minus);
+    minus.text[0] = '-';
+    minus.text[1] = 0;
+
+    text words;
+    tb_new_text(&words);
+
+    for (int k = 0; k < 4 && pass; k++) {
+      for (int i = 0; i < vectors && pass; i++) {
+        text word;
+        tb_new_text(&word);
+
+        if ((i % 20) == 0) {
+          tb_new_text(&words);
+        }
+
+        text old_words;
+        tb_new_text(&old_words);
+        strncpy(old_words.text, words.text, TB_TEXT_SIZE);
+
+        int result = _tb_prompt_word(in, out, i, &word, &words);
+
+        text exp_words;
+        tb_new_text(&exp_words);
+
+        if (exp[i] == SUCCESS) {
+          if (old_words.text[0] == 0) {
+            if (tb_textcat(&exp_words, &words) != SUCCESS) {
+              pass = 0;
+              break;
+            }
+          } else {
+            if (tb_textcat(&exp_words, &old_words) != SUCCESS ||
+                tb_textcat(&exp_words, &minus) != SUCCESS ||
+                tb_textcat(&exp_words, &word) != SUCCESS) {
+              pass = 0;
+              break;
+            }
+          }
+        } else {
+          if (tb_textcat(&exp_words, &old_words) != SUCCESS) {
+            pass = 0;
+            break;
+          }
+        }
+
+        if (result != exp[i]) {
+          pass = 0;
+          break;
+        }
+
+        if (exp[i] == SUCCESS) {
+          if (strncmp(test_vectors[i], word.text, 5) != 0) {
+            pass = 0;
+            break;
+          }
+          if (strncmp(words.text, exp_words.text, TB_TEXT_SIZE) != 0) {
+            pass = 0;
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  if (in == NULL) {
+    fclose(in);
+  }
+
+  if (out == NULL) {
+    fclose(out);
+  }
+
+  passes += pass;
+
+  TB_TEST_END("tb_prompt_word:   ");
 }
