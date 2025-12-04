@@ -44,4 +44,22 @@ int _tb_prompt_word(FILE* in, FILE* out, int word_num, text* word, text* words);
 // This is the same as _tb_prompt_word with stdin and stdout used as in and out
 int tb_prompt_word(int word_num, text* word, text* words);
 
+// Finite field maths
+
+// Adds two field elements
+// Returns the sum of the two elements
+int tb_ff_add(int a, int b);
+
+// Multiplies two field elements
+// Returns the product of the two elements
+int tb_ff_mul(int a, int b);
+
+// Negates a field element
+// Returns the negation of the field element
+int tb_ff_negate(int a);
+
+// Inverts a field element
+// Returns the multiplicative inverse of teh field element
+int tb_ff_inverse(int a);
+
 #endif

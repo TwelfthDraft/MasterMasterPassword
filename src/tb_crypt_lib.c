@@ -11,6 +11,9 @@
 #define TB_WORDS_IMPLEMENTATION 1
 #include "tb_words.h"
 
+int log2_arr[1024] = {-1};
+int pow2_arr[1024] = {-1};
+
 int tb_new_digest(digest* digest) {
   int result = tb_new_text(digest);
   return result;
@@ -118,3 +121,92 @@ int _tb_prompt_word(FILE* in, FILE* out, int word_num, text* word, text* words) 
 int tb_prompt_word(int word_num, text* word, text* words) {
   return _tb_prompt_word(stdin, stdout, word_num, word, words);
 }
+
+// Finite field maths
+
+int MOD = 1033;
+
+int _tb_ff_mul(int a, int b) {
+  if (a < 0 || a > 1023 || b < 0 || b > 1023) {
+    return -1;
+  }
+
+  int product = a * b;
+
+  int shift = 10;
+  int mod = MOD << shift;
+
+  while (shift >= 0) {
+    int next = mod ^ product;
+    if (next < product) {
+      product = next;
+    }
+    mod >>= 1;
+    shift--;
+  }
+
+  return product;
+}
+
+void init_cache() {
+  if (pow2_arr[0] != -1) {
+    return;
+  }
+
+  int g = 2;
+  int prod = 1;
+
+  for (int i = 0; i < 1023; i++) {
+    pow2_arr[i] = prod;
+    log2_arr[prod] = i;
+    prod = _tb_ff_mul(prod, g);
+  }
+}
+
+int tb_ff_add(int a, int b) {
+  if (a < 0 || a > 1023 || b < 0 || b > 1023) {
+    return -1;
+  }
+
+  return a ^ b;
+}
+
+int tb_ff_mul(int a, int b) {
+  init_cache();
+
+  if (a == 0 || b == 0) {
+    return 0;
+  }
+
+  if (a < 0 || a > 1023 || b < 0 || b > 1023) {
+    return -1;
+  }
+
+  int logA = log2_arr[a];
+  int logB = log2_arr[b];
+  int logAB = (logA + logB) % 1023;
+
+  return pow2_arr[logAB];
+}
+
+int tb_ff_negate(int a) {
+  if (a < 0 || a > 1023) {
+    return -1;
+  }
+
+  return a;
+}
+
+int tb_ff_inverse(int a) {
+  init_cache();
+
+  if (a == 0 || a < 0 || a > 1023) {
+    return -1;
+  }
+
+  int lg2 = log2_arr[a];
+  int index = lg2 == 0 ? 0 : (1023 - lg2);
+
+  return pow2_arr[index];
+}
+

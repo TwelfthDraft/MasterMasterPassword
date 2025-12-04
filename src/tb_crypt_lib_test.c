@@ -32,6 +32,8 @@ int check_tb_find_word();
 
 int check_tb_prompt_word();
 
+int check_tb_ff_all();
+
 int test_crypt_lib() {
   printf("Testing:  crypt_lib\n");
 
@@ -45,6 +47,7 @@ int test_crypt_lib() {
   pass &= check_tb_get_word() == SUCCESS;
   pass &= check_tb_find_word() == SUCCESS;
   pass &= check_tb_prompt_word() == SUCCESS;
+  pass &= check_tb_ff_all() == SUCCESS;
 
   printf("crypt_lib: %s\n\n", pass ? "PASS" : "FAIL");
 
@@ -500,4 +503,66 @@ int check_tb_prompt_word() {
   passes += pass;
 
   TB_TEST_END("tb_prompt_word:   ");
+}
+
+int check_tb_ff_all() {
+  TB_TEST_START
+
+  tests++;
+
+  int pass = 1;
+
+  int one = 1;
+  int zero = 0;
+
+  int step = 16;
+
+  for (int a = 0; pass && a < 1024; a += step) {
+    if (tb_ff_mul(a , one) != a) {
+      pass = 0;
+      break;
+    }
+    if (tb_ff_mul(a, zero) != 0) {
+      pass = 0;
+      break;
+    }
+    if (tb_ff_add(tb_ff_negate(a), a) != zero) {
+      pass = 0;
+      break;
+    }
+    if (a != 0 && tb_ff_mul(tb_ff_inverse(a), a) != one) {
+      pass = 0;
+      break;
+    }
+
+    for (int b = 0; pass && b < 1024; b += step) {
+      if (tb_ff_mul(a, b) != tb_ff_mul(b, a)) {
+        pass = 0;
+        break;
+      }
+      if (tb_ff_add(a, b) != tb_ff_add(b, a)) {
+        pass = 0;
+        break;
+      }
+
+      for (int c = 0; pass && c < 1024; c += step) {
+        if (tb_ff_mul(a, tb_ff_mul(b, c)) != tb_ff_mul(tb_ff_mul(a, b), c)) {
+          pass = 0;
+          break;
+        }
+        if (tb_ff_add(a, tb_ff_add(b, c)) != tb_ff_add(tb_ff_add(a, b), c)) {
+          pass = 0;
+          break;
+        }
+        if (tb_ff_mul(a, tb_ff_add(b, c)) != tb_ff_add(tb_ff_mul(a, b), tb_ff_mul(a, c))) {
+          pass = 0;
+          break;
+        }
+      }
+    }
+  }
+
+  passes += pass;
+
+  TB_TEST_END("tb_ff_all:        ");
 }
