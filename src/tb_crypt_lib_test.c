@@ -564,5 +564,43 @@ int check_tb_ff_all() {
 
   passes += pass;
 
+  tests++;
+
+  pass = 1;
+
+  if (tb_ff_log2(0) != -1) {
+    pass = 0;
+  }
+
+  int product = 1;
+  for (int i = 0; pass && i < 1023; i++) {
+    if (tb_ff_log2(product) != i) {
+      pass = 0;
+      break;
+    }
+    if (tb_ff_pow2(i) != product) {
+      pass = 0;
+      break;
+    }
+    product = tb_ff_mul(product, 2);
+  }
+
+  passes += pass;
+
+  tests++;
+
+  product = 1;
+  int inv2 = tb_ff_inverse(2);
+
+  for (int i = 0; i < 1023; i++) {
+    if (tb_ff_pow2(-i) != product) {
+      pass = 0;
+      break;
+    }
+    product = tb_ff_mul(product, inv2);
+  }
+
+  passes += pass;
+
   TB_TEST_END("tb_ff_all:        ");
 }

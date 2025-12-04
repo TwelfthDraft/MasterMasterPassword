@@ -210,3 +210,26 @@ int tb_ff_inverse(int a) {
   return pow2_arr[index];
 }
 
+int tb_ff_pow2(int n) {
+  init_cache();
+
+  if (n < 0 || n >= 1023) {
+    n = n % 1023;
+    while (n < 0) {
+      n += 1023;
+    }
+  }
+
+  return pow2_arr[n];
+}
+
+int tb_ff_log2(int a) {
+  init_cache();
+
+  if (a == 0 || a < 0 || a > 1023) {
+    return -1;
+  }
+
+  return log2_arr[a];
+}
+

@@ -59,7 +59,15 @@ int tb_ff_mul(int a, int b);
 int tb_ff_negate(int a);
 
 // Inverts a field element
-// Returns the multiplicative inverse of teh field element
+// Returns the multiplicative inverse of the field element, or -1 for zero
 int tb_ff_inverse(int a);
+
+// Computes the nth power of the 2 field element
+// Returns the nth power
+int tb_ff_pow2(int n);
+
+// Computes the log to base 2 of a field element
+// Returns the log to base 2, or -1 for zero
+int tb_ff_log2(int a);
 
 #endif
