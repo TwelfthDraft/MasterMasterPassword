@@ -82,4 +82,14 @@ int tb_ff_solve(int x[MATRIX_SIZE], int c[][MATRIX_SIZE], int y[MATRIX_SIZE], in
 // Returns SUCCESS if a solution is found
 int tb_ff_evaluate(int y[MATRIX_SIZE], int c[][MATRIX_SIZE], int x[MATRIX_SIZE], int size);
 
+// Converts a list of data values into a list of polynomial coefficients
+// The x coordinates are assumed to be powers of 2 ((2, data[0]), (4, data[0]), ...)
+// Returns SUCCESS on success
+int tb_ff_lagrange(int coeffs[], int data[], int size);
+
+// Converts a list of polynomial coefficients into a list of data values
+// The x coordinates are assumed to be powers of 2 ((2, data[0]), (4, data[0]), ...)
+// Returns SUCCESS on success
+int tb_ff_inv_lagrange(int data[], int coeff[], int size);
+
 #endif

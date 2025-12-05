@@ -343,3 +343,39 @@ int tb_ff_evaluate(int y[MATRIX_SIZE], int c[MATRIX_SIZE][MATRIX_SIZE], int x[MA
   return SUCCESS;
 }
 
+int tb_ff_lagrange(int coeffs[], int data[], int size) {
+  int c[MATRIX_SIZE][MATRIX_SIZE];
+
+  for (int row = 0; row < size; row++) {
+    for (int col = 0; col < size; col++) {
+      c[row][col] = tb_ff_pow2(row * col);
+    }
+  }
+
+  if (tb_ff_solve(coeffs, c, data, size) != SUCCESS) {
+    return !SUCCESS;
+  }
+
+  return SUCCESS;
+}
+
+int tb_ff_inv_lagrange(int data[], int coeff[], int size) {
+  int c[MATRIX_SIZE][MATRIX_SIZE];
+
+  for (int row = 0; row < size; row++) {
+    for (int col = 0; col < size; col++) {
+      c[row][col] = tb_ff_pow2(row * col);
+    }
+  }
+
+  for (int row = 0; row < size; row++) {
+    int d = 0;
+    for (int col = 0; col < size; col++) {
+      d = tb_ff_add(d, tb_ff_mul(c[row][col], coeff[col]));
+    }
+    data[row] = d;
+  }
+
+  return SUCCESS;
+}
+

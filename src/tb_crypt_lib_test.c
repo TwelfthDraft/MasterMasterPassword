@@ -38,6 +38,10 @@ int check_tb_ff_evaluate();
 
 int check_tb_ff_solve();
 
+int check_tb_inv_lagrange();
+
+int check_tb_lagrange();
+
 int test_crypt_lib() {
   printf("Testing:  crypt_lib\n");
 
@@ -54,6 +58,8 @@ int test_crypt_lib() {
   pass &= check_tb_ff_all() == SUCCESS;
   pass &= check_tb_ff_evaluate() == SUCCESS;
   pass &= check_tb_ff_solve() == SUCCESS;
+  pass &= check_tb_inv_lagrange() == SUCCESS;
+  pass &= check_tb_lagrange() == SUCCESS;
 
   printf("crypt_lib: %s\n\n", pass ? "PASS" : "FAIL");
 
@@ -90,7 +96,7 @@ int check_tb_new_digest() {
 
   passes += pass;
 
-  TB_TEST_END("tb_new_digest:    ");
+  TB_TEST_END("tb_new_digest:     ");
 }
 
 int check_tb_digest_to_hex() {
@@ -104,7 +110,7 @@ int check_tb_digest_to_hex() {
     check_tb_digest_to_hex_single(&tests, &passes, lengths[i]);
   }
 
-  TB_TEST_END("tb_digest_to_hex: ");
+  TB_TEST_END("tb_digest_to_hex:  ");
 }
 
 int check_tb_digest_to_hex_single(int* tests, int* passes, int length) {
@@ -160,7 +166,7 @@ int check_tb_hex_to_digest() {
     }
   }
 
-  TB_TEST_END("tb_hex_to_digest: ");
+  TB_TEST_END("tb_hex_to_digest:  ");
 }
 
 int check_tb_hex_to_digest_single(int* tests, int* passes, int length, int hex_only) {
@@ -251,7 +257,7 @@ int check_tb_text_to_digest() {
 
   passes += pass;
 
-  TB_TEST_END("tb_text_to_digest:");
+  TB_TEST_END("tb_text_to_digest: ");
 }
 
 int check_tb_mix_digests() {
@@ -295,7 +301,7 @@ int check_tb_mix_digests() {
 
   passes += pass;
 
-  TB_TEST_END("tb_mix_digests:   ");
+  TB_TEST_END("tb_mix_digests:    ");
 }
 
 int check_tb_get_word() {
@@ -322,7 +328,7 @@ int check_tb_get_word() {
 
   passes += pass;
 
-  TB_TEST_END("tb_get_word:      ");
+  TB_TEST_END("tb_get_word:       ");
 }
 
 int check_tb_find_word() {
@@ -367,7 +373,7 @@ int check_tb_find_word() {
 
   passes += pass;
 
-  TB_TEST_END("tb_find_word:     ");
+  TB_TEST_END("tb_find_word:      ");
 }
 
 int check_tb_prompt_word() {
@@ -508,7 +514,7 @@ int check_tb_prompt_word() {
 
   passes += pass;
 
-  TB_TEST_END("tb_prompt_word:   ");
+  TB_TEST_END("tb_prompt_word:    ");
 }
 
 int check_tb_ff_all() {
@@ -608,7 +614,7 @@ int check_tb_ff_all() {
 
   passes += pass;
 
-  TB_TEST_END("tb_ff_all:        ");
+  TB_TEST_END("tb_ff_all:         ");
 }
 
 int check_tb_ff_evaluate() {
@@ -661,7 +667,7 @@ int check_tb_ff_evaluate() {
 
   passes += pass;
 
-  TB_TEST_END("tb_ff_evaluate:   ");
+  TB_TEST_END("tb_ff_evaluate:    ");
 }
 
 int check_tb_ff_solve() {
@@ -709,5 +715,96 @@ int check_tb_ff_solve() {
 
   passes += pass;
 
-  TB_TEST_END("tb_ff_solve:      ");
+  TB_TEST_END("tb_ff_solve:       ");
+}
+
+int check_tb_inv_lagrange() {
+  TB_TEST_START
+
+  tests++;
+
+  int pass = 1;
+
+  srand(13579);
+
+  for (int i = 0; i < 50; i++) {
+    int size = (i % 10) + 10;
+
+    int coeffs[MATRIX_SIZE];
+
+    for (int j = 0; j < size; j++) {
+      coeffs[j] = rand() % 1023;
+    }
+
+    int exp_data[MATRIX_SIZE];
+
+    for (int j = 0; j < size; j++) {
+      int sum = 0;
+      for (int k = 0; k < size; k++) {
+        int x_j_k = tb_ff_pow2(j * k);
+        int t_j_k = tb_ff_mul(x_j_k, coeffs[k]);
+        sum = tb_ff_add(sum, t_j_k);
+      }
+      exp_data[j] = sum;
+    }
+
+    int data[MATRIX_SIZE];
+
+    if (tb_ff_inv_lagrange(data, coeffs, size) != SUCCESS) {
+      pass = 0;
+      break;
+    }
+
+    if (memcmp(exp_data, data, size * sizeof(*exp_data)) != 0) {
+      pass = 0;
+      break;
+    }
+  }
+
+  passes += pass;
+
+  TB_TEST_END("tb_ff_inv_lagrange:");
+}
+
+int check_tb_lagrange() {
+  TB_TEST_START
+
+  tests++;
+
+  int pass = 1;
+
+  srand(24680);
+
+  for (int i = 0; i < 50; i++) {
+    int size = (i % 10) + 10;
+
+    int data[MATRIX_SIZE];
+
+    for (int j = 0; j < size; j++) {
+      data[j] = rand() % 1023;
+    }
+
+    int coeffs[MATRIX_SIZE];
+
+    if (tb_ff_lagrange(coeffs, data, size) != SUCCESS) {
+      pass = 0;
+      break;
+    }
+
+    int inv_data[MATRIX_SIZE];
+
+    if (tb_ff_inv_lagrange(inv_data, coeffs, size) != SUCCESS) {
+      pass = 0;
+      break;
+    }
+
+    if (memcmp(inv_data, data, size * sizeof(*inv_data)) != 0) {
+      pass = 0;
+      break;
+    }
+  }
+
+  passes += pass;
+
+  TB_TEST_END("tb_ff_lagrange:    ");
 }
