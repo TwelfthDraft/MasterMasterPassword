@@ -123,7 +123,6 @@ int tb_prompt_word(int word_num, text* word, text* words) {
 }
 
 // Finite field maths
-
 int MOD = 1033;
 
 int _tb_ff_mul(int a, int b) {
@@ -231,5 +230,116 @@ int tb_ff_log2(int a) {
   }
 
   return log2_arr[a];
+}
+
+void swap_rows(int* a, int size, int* b) {
+  if (a != b) {
+    for (int col = 0; col < size; col++) {
+      int t = a[col];
+      a[col] = b[col];
+      b[col] = t;
+    }
+  }
+}
+
+void sub_rows(int* a, int size, int* b) {
+  for (int col = 0; col < size; col++) {
+    a[col] = tb_ff_add(a[col], b[col]);
+  }
+}
+
+void mul_row(int* row, int size, int a) {
+  for (int i = 0; i < size; i++) {
+    row[i] = tb_ff_mul(row[i], a);
+  }
+}
+
+int tb_ff_solve(int x[MATRIX_SIZE], int c[][MATRIX_SIZE], int y[MATRIX_SIZE], int size) {
+  if (size > MATRIX_SIZE) {
+    return !SUCCESS;
+  }
+
+  int c_copy[MATRIX_SIZE][MATRIX_SIZE + 1];
+
+  for (int row = 0; row < size; row++) {
+    for (int col = 0; col < size; col++) {
+      c_copy[row][col] = c[row][col];
+    }
+    c_copy[row][size] = y[row];
+  }
+
+  for (int col = 0; col < size; col++) {
+    // Find a row that starts 0, 0, ... , x, ....
+    int ref_row = -1;
+    for (int row = 0; row < size; row++) {
+      if (c_copy[row][col] != 0) {
+        ref_row = row;
+        for (int col2 = 0; col2 < col; col2++) {
+          if (c_copy[row][col2] != 0) {
+            ref_row = -1;
+            break;
+          }
+        }
+        if (ref_row != -1) {
+          break;
+        }
+      }
+    }
+
+    if (ref_row == -1) {
+      return !SUCCESS;
+    }
+
+    for (int row = 0; row < size; row++) {
+      if (row == ref_row || c_copy[row][col] == 0) {
+        continue;
+      }
+
+      int ref_val = c_copy[ref_row][col];
+      int ref_inv = tb_ff_inverse(ref_val);
+      int row_inv = tb_ff_inverse(c_copy[row][col]);
+
+      mul_row(c_copy[row], size + 1, row_inv);
+      mul_row(c_copy[row], size + 1, ref_val);
+      sub_rows(c_copy[row], size + 1, c_copy[ref_row]);
+    }
+  }
+
+  for (int col = 0; col < size; col++) {
+    for (int row = 0; row < size; row++) {
+      if (c_copy[row][col] != 0) {
+        int row_inv = tb_ff_inverse(c_copy[row][col]);
+        mul_row(c_copy[row], size + 1, row_inv);
+        swap_rows(c_copy[row], size + 1, c_copy[col]);
+        break;
+      }
+    }
+  }
+
+  for (int row = 0; row < size; row++) {
+    x[row] = c_copy[row][size];
+  }
+
+  return SUCCESS;
+}
+
+int tb_ff_evaluate(int y[MATRIX_SIZE], int c[MATRIX_SIZE][MATRIX_SIZE], int x[MATRIX_SIZE], int size) {
+  int c_copy[MATRIX_SIZE][MATRIX_SIZE + 1];
+
+  for (int row = 0; row < size; row++) {
+    for (int col = 0; col < size; col++) {
+      c_copy[row][col] = c[row][col];
+    }
+  }
+
+  for (int row = 0; row < size; row++) {
+    int sum = 0;
+    for (int col=0; col < size; col++) {
+      sum = tb_ff_add(sum, tb_ff_mul(c[row][col], x[col]));
+    }
+    y[row] = sum;
+  }
+
+  return SUCCESS;
 }
 

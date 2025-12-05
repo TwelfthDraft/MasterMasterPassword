@@ -34,6 +34,10 @@ int check_tb_prompt_word();
 
 int check_tb_ff_all();
 
+int check_tb_ff_evaluate();
+
+int check_tb_ff_solve();
+
 int test_crypt_lib() {
   printf("Testing:  crypt_lib\n");
 
@@ -48,6 +52,8 @@ int test_crypt_lib() {
   pass &= check_tb_find_word() == SUCCESS;
   pass &= check_tb_prompt_word() == SUCCESS;
   pass &= check_tb_ff_all() == SUCCESS;
+  pass &= check_tb_ff_evaluate() == SUCCESS;
+  pass &= check_tb_ff_solve() == SUCCESS;
 
   printf("crypt_lib: %s\n\n", pass ? "PASS" : "FAIL");
 
@@ -603,4 +609,105 @@ int check_tb_ff_all() {
   passes += pass;
 
   TB_TEST_END("tb_ff_all:        ");
+}
+
+int check_tb_ff_evaluate() {
+  TB_TEST_START
+
+  tests++;
+
+  int pass = 1;
+
+  for (int i = 0; i < 50; i++) {
+    int size = (i % 10) + 10;
+
+    int c[MATRIX_SIZE][MATRIX_SIZE];
+
+    int y[MATRIX_SIZE];
+
+    int x[MATRIX_SIZE];
+
+    for (int row = 0; row < size; row++) {
+      x[row] = rand() % 1023;
+      for (int col = 0; col < size; col++) {
+        c[row][col] = rand() % 1023;
+      }
+    }
+
+    int yExp[MATRIX_SIZE];
+
+    for (int row = 0; row < size; row++) {
+      yExp[row] = 0;
+    }
+
+    for (int row = 0; row < size; row++) {
+      for (int col = 0; col < size; col++) {
+        yExp[row] = tb_ff_add(yExp[row], tb_ff_mul(c[row][col], x[col]));
+      }
+    }
+
+    if (tb_ff_evaluate(y, c, x, size) != SUCCESS) {
+      pass = 0;
+      break;
+    }
+
+    for (int row = 0; row < size; row++) {
+      if (yExp[row] != y[row]) {
+        pass = 0;
+        break;
+      }
+    }
+  }
+
+  passes += pass;
+
+  TB_TEST_END("tb_ff_evaluate:   ");
+}
+
+int check_tb_ff_solve() {
+  TB_TEST_START
+
+  tests++;
+
+  int pass = 1;
+
+  srand(12345);
+
+  for (int i = 0; i < 50; i++) {
+    int size = (i % 10) + 10;
+
+    int c[MATRIX_SIZE][MATRIX_SIZE];
+
+    int y[MATRIX_SIZE];
+
+    int x[MATRIX_SIZE];
+
+    for (int row = 0; row < size; row++) {
+      y[row] = rand() % 1023;
+      for (int col = 0; col < size; col++) {
+        c[row][col] = rand() % 1023;
+      }
+    }
+
+    if (tb_ff_solve(x, c, y, size) != SUCCESS) {
+      pass = 0;
+      break;
+    }
+
+    int result[MATRIX_SIZE];
+
+    if (tb_ff_evaluate(result, c, x, size) != SUCCESS) {
+      pass = 0;
+      break;
+    }
+
+    if (memcmp(result, y, size * sizeof(*result)) != 0) {
+      pass = 0;
+      break;
+    }
+  }
+
+  passes += pass;
+
+  TB_TEST_END("tb_ff_solve:      ");
 }

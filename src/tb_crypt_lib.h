@@ -5,6 +5,8 @@
 
 #define DIGEST_SIZE 32
 
+#define MATRIX_SIZE 64
+
 typedef text digest;
 
 // Initializes a digest structure
@@ -69,5 +71,15 @@ int tb_ff_pow2(int n);
 // Computes the log to base 2 of a field element
 // Returns the log to base 2, or -1 for zero
 int tb_ff_log2(int a);
+
+// Solves a series of simultaneous equations
+// Find X where Y = X * C
+// Returns SUCCESS if a solution is found
+int tb_ff_solve(int x[MATRIX_SIZE], int c[][MATRIX_SIZE], int y[MATRIX_SIZE], int size);
+
+// Evaluates a matrix multiply
+// Find Y where Y = X * C
+// Returns SUCCESS if a solution is found
+int tb_ff_evaluate(int y[MATRIX_SIZE], int c[][MATRIX_SIZE], int x[MATRIX_SIZE], int size);
 
 #endif
