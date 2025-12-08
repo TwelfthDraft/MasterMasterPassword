@@ -343,12 +343,14 @@ int tb_ff_evaluate(int y[MATRIX_SIZE], int c[MATRIX_SIZE][MATRIX_SIZE], int x[MA
   return SUCCESS;
 }
 
-int tb_ff_lagrange(int coeffs[], int data[], int size) {
+int tb_ff_lagrange_general(int coeffs[], int x[], int data[], int size) {
   int c[MATRIX_SIZE][MATRIX_SIZE];
 
   for (int row = 0; row < size; row++) {
+    int x_power = 1;
     for (int col = 0; col < size; col++) {
-      c[row][col] = tb_ff_pow2(row * col);
+      c[row][col] = x_power;
+      x_power = tb_ff_mul(x_power, x[row]);
     }
   }
 
@@ -359,19 +361,21 @@ int tb_ff_lagrange(int coeffs[], int data[], int size) {
   return SUCCESS;
 }
 
-int tb_ff_inv_lagrange(int data[], int coeff[], int size) {
+int tb_ff_inv_lagrange_general(int data[], int x[], int coeffs[], int size) {
   int c[MATRIX_SIZE][MATRIX_SIZE];
 
   for (int row = 0; row < size; row++) {
+    int x_power = 1;
     for (int col = 0; col < size; col++) {
-      c[row][col] = tb_ff_pow2(row * col);
+      c[row][col] = x_power;
+      x_power = tb_ff_mul(x_power, x[row]);
     }
   }
 
   for (int row = 0; row < size; row++) {
     int d = 0;
     for (int col = 0; col < size; col++) {
-      d = tb_ff_add(d, tb_ff_mul(c[row][col], coeff[col]));
+      d = tb_ff_add(d, tb_ff_mul(c[row][col], coeffs[col]));
     }
     data[row] = d;
   }
@@ -379,3 +383,28 @@ int tb_ff_inv_lagrange(int data[], int coeff[], int size) {
   return SUCCESS;
 }
 
+int tb_ff_lagrange(int coeffs[], int data[], int size) {
+  int x[MATRIX_SIZE];
+
+  x[0] = 1;
+
+  for (int row = 1; row < size; row++) {
+    x[row] = tb_ff_mul(x[row - 1], 2);
+  }
+
+  return tb_ff_lagrange_general(coeffs, x, data, size);
+}
+
+int tb_ff_inv_lagrange(int data[], int coeffs[], int size) {
+  int c[MATRIX_SIZE][MATRIX_SIZE];
+
+  int x[MATRIX_SIZE];
+
+  x[0] = 1;
+
+  for (int row = 1; row < size; row++) {
+    x[row] = tb_ff_mul(x[row - 1], 2);
+  }
+
+  return tb_ff_inv_lagrange_general(data, x, coeffs, size);
+}

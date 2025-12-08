@@ -73,22 +73,32 @@ int tb_ff_pow2(int n);
 int tb_ff_log2(int a);
 
 // Solves a series of simultaneous equations
-// Find X where Y = X * C
+// Find X where Y = C * X
 // Returns SUCCESS if a solution is found
 int tb_ff_solve(int x[MATRIX_SIZE], int c[][MATRIX_SIZE], int y[MATRIX_SIZE], int size);
 
 // Evaluates a matrix multiply
-// Find Y where Y = X * C
+// Find Y where Y = C * X
 // Returns SUCCESS if a solution is found
 int tb_ff_evaluate(int y[MATRIX_SIZE], int c[][MATRIX_SIZE], int x[MATRIX_SIZE], int size);
 
 // Converts a list of data values into a list of polynomial coefficients
-// The x coordinates are assumed to be powers of 2 ((2, data[0]), (4, data[0]), ...)
+// The x coordinates are given in the x array
+// Returns SUCCESS on success
+int tb_ff_lagrange_general(int coeffs[], int x[], int data[], int size);
+
+// Converts a list of polynomial coefficients into a list of data values
+// The x coordinates are given in the x array
+// Returns SUCCESS on success
+int tb_ff_inv_lagrange_general(int data[], int x[], int coeff[], int size);
+
+// Converts a list of data values into a list of polynomial coefficients
+// The x coordinates are the powers of 2
 // Returns SUCCESS on success
 int tb_ff_lagrange(int coeffs[], int data[], int size);
 
 // Converts a list of polynomial coefficients into a list of data values
-// The x coordinates are assumed to be powers of 2 ((2, data[0]), (4, data[0]), ...)
+// The x coordinates are the powers of 2
 // Returns SUCCESS on success
 int tb_ff_inv_lagrange(int data[], int coeff[], int size);
 
