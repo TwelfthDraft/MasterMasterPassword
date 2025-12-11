@@ -994,17 +994,11 @@ int check_tb_rs_decode_raw() {
     int c_size = d_size + (i % 11);
 
     int data[MATRIX_SIZE];
-    int ext_data[MATRIX_SIZE];
 
     int s_size = c_size - d_size;
 
-    for (int j = 0; j < s_size; j++) {
-      ext_data[j] = 0;
-    }
-
     for (int j = 0; j < d_size; j++) {
       data[j] = rand() % 1023;
-      ext_data[j + s_size] = data[j];
     }
 
     int coeffs[MATRIX_SIZE];
