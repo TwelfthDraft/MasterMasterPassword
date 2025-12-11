@@ -516,11 +516,11 @@ int check_tb_prompt_word() {
     }
   }
 
-  if (in == NULL) {
+  if (in != NULL) {
     fclose(in);
   }
 
-  if (out == NULL) {
+  if (out != NULL) {
     fclose(out);
   }
 
