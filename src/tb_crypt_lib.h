@@ -102,4 +102,15 @@ int tb_ff_lagrange(int coeffs[], int data[], int size);
 // Returns SUCCESS on success
 int tb_ff_inv_lagrange(int data[], int coeff[], int size);
 
+// Convert a list of data points into Reed Solomon encoding
+// The x coordinates are the powers of 2
+// Returns SUCCESS on success
+int tb_ff_rs_encode(int coeffs[], int c_size, int data[], int d_size);
+
+// Decode a list of Reed Solomon coefficients into a list of data points and syndrome
+// The x coordinates are the powers of 2
+// The length of the syndrome is c_size - d_size
+// Returns SUCCESS on success
+int tb_ff_rs_decode_raw(int data[], int d_size, int syndrome[], int coeffs[], int c_size);
+
 #endif

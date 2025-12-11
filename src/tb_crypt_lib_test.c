@@ -46,6 +46,10 @@ int check_tb_inv_lagrange_general();
 
 int check_tb_lagrange_general();
 
+int check_tb_rs_encode();
+
+int check_tb_rs_decode_raw();
+
 int test_crypt_lib() {
   printf("Testing:  crypt_lib\n");
 
@@ -66,6 +70,8 @@ int test_crypt_lib() {
   pass &= check_tb_lagrange() == SUCCESS;
   pass &= check_tb_inv_lagrange_general() == SUCCESS;
   pass &= check_tb_lagrange_general() == SUCCESS;
+  pass &= check_tb_rs_encode() == SUCCESS;
+  pass &= check_tb_rs_decode_raw() == SUCCESS;
 
   printf("crypt_lib: %s\n\n", pass ? "PASS" : "FAIL");
 
@@ -921,4 +927,114 @@ int check_tb_lagrange_general() {
   passes += pass;
 
   TB_TEST_END("tb_ff_lagrange_general:    ");
+}
+
+int check_tb_rs_encode() {
+  TB_TEST_START
+
+  tests++;
+
+  int pass = 1;
+
+  srand(334455);
+
+  for (int i = 0; i < 50; i++) {
+    int d_size = (i % 10) + 10;
+    int c_size = d_size + (i % 11);
+
+    int data[MATRIX_SIZE];
+    int ext_data[MATRIX_SIZE];
+
+    int s_size = c_size - d_size;
+
+    for (int j = 0; j < s_size; j++) {
+      ext_data[j] = 0;
+    }
+
+    for (int j = 0; j < d_size; j++) {
+      data[j] = rand() % 1023;
+      ext_data[j + s_size] = data[j];
+    }
+
+    int coeffs[MATRIX_SIZE];
+
+    if (tb_ff_rs_encode(coeffs, c_size, data, d_size) != SUCCESS) {
+      pass = 0;
+      break;
+    }
+
+    int inv_data[MATRIX_SIZE];
+    if (tb_ff_inv_lagrange(inv_data, coeffs, c_size) != SUCCESS) {
+      pass = 0;
+      break;
+    }
+
+    if (memcmp(inv_data, ext_data, c_size * sizeof(*inv_data)) != 0) {
+      pass = 0;
+      break;
+    }
+  }
+
+  passes += pass;
+
+  TB_TEST_END("tb_ff_rs_encode:           ");
+}
+
+int check_tb_rs_decode_raw() {
+  TB_TEST_START
+
+  tests++;
+
+  int pass = 1;
+
+  srand(334455);
+
+  for (int i = 0; i < 50; i++) {
+    int d_size = (i % 10) + 10;
+    int c_size = d_size + (i % 11);
+
+    int data[MATRIX_SIZE];
+    int ext_data[MATRIX_SIZE];
+
+    int s_size = c_size - d_size;
+
+    for (int j = 0; j < s_size; j++) {
+      ext_data[j] = 0;
+    }
+
+    for (int j = 0; j < d_size; j++) {
+      data[j] = rand() % 1023;
+      ext_data[j + s_size] = data[j];
+    }
+
+    int coeffs[MATRIX_SIZE];
+
+    if (tb_ff_rs_encode(coeffs, c_size, data, d_size) != SUCCESS) {
+      pass = 0;
+      break;
+    }
+
+    int inv_data[MATRIX_SIZE];
+    int syn[MATRIX_SIZE];
+    int exp_syn[MATRIX_SIZE] = {0};
+
+    if (tb_ff_rs_decode_raw(inv_data, d_size, syn, coeffs, c_size) != SUCCESS) {
+      pass = 0;
+      break;
+    }
+
+    if (memcmp(inv_data, data, d_size * sizeof(*inv_data)) != 0) {
+      pass = 0;
+      break;
+    }
+
+    if (memcmp(syn, exp_syn, s_size * sizeof(*syn)) != 0) {
+      pass = 0;
+      break;
+    }
+  }
+
+  passes += pass;
+
+  TB_TEST_END("tb_ff_rs_decode_raw:       ");
 }

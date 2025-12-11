@@ -408,3 +408,43 @@ int tb_ff_inv_lagrange(int data[], int coeffs[], int size) {
 
   return tb_ff_inv_lagrange_general(data, x, coeffs, size);
 }
+
+int tb_ff_rs_encode(int coeffs[], int c_size, int data[], int d_size) {
+  if (c_size < d_size) {
+    return !SUCCESS;
+  }
+
+  int ext_data[MATRIX_SIZE];
+
+  int s_size = c_size - d_size;
+
+  memset(ext_data, 0, s_size * sizeof(*ext_data));
+
+  memcpy(ext_data + s_size, data, d_size * sizeof(*data));
+
+  if (tb_ff_lagrange(coeffs, ext_data, c_size) != SUCCESS) {
+    return !SUCCESS;
+  }
+
+  return SUCCESS;
+}
+
+int tb_ff_rs_decode_raw(int data[], int d_size, int syndrome[], int coeffs[], int c_size) {
+  if (c_size < d_size) {
+    return !SUCCESS;
+  }
+
+  int ext_data[MATRIX_SIZE];
+
+  int s_size = c_size - d_size;
+
+  if (tb_ff_inv_lagrange(ext_data, coeffs, c_size) != SUCCESS) {
+    return !SUCCESS;
+  }
+
+  memcpy(syndrome, ext_data, s_size * sizeof(*syndrome));
+
+  memcpy(data, ext_data + s_size, d_size * sizeof(*data));
+
+  return SUCCESS;
+}
