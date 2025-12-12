@@ -499,3 +499,63 @@ int tb_ff_rs_decode_raw(int data[], int d_size, int syndrome[], int coeffs[], in
 
   return SUCCESS;
 }
+
+int tb_ff_rs_decode_errors(int data[], int d_size, int errors[], int syndrome[], int coeffs[], int c_size) {
+  if (c_size < d_size) {
+    return !SUCCESS;
+  }
+
+  int error_count = 0;
+  int error_index[MATRIX_SIZE] = {0};
+
+  for (int i = 0; i < c_size; i++) {
+    if (errors[i]) {
+      error_index[error_count] = i;
+      error_count++;
+    }
+  }
+
+  int s_size = c_size - d_size;
+
+  if (error_count > s_size) {
+    return !SUCCESS;
+  }
+
+  int c[MATRIX_SIZE][MATRIX_SIZE];
+
+  for (int col = 0; col < error_count; col++) {
+    int x_val = tb_ff_pow2(error_index[col]);
+    int x_pow = 1;
+    for (int row = 0; row < error_count; row++) {
+      c[row][col] = x_pow;
+      x_pow = tb_ff_mul(x_pow, x_val);
+    }
+  }
+
+  int error_values[MATRIX_SIZE];
+
+  if (tb_ff_solve(error_values, c, syndrome, error_count) != SUCCESS) {
+    return !SUCCESS;
+  }
+
+  int corrected_coeffs[MATRIX_SIZE];
+  memcpy(corrected_coeffs, coeffs, c_size * sizeof(*corrected_coeffs));
+
+  for (int i = 0; i < error_count; i++) {
+    corrected_coeffs[error_index[i]] = tb_ff_add(corrected_coeffs[error_index[i]], tb_ff_negate(error_values[i]));
+  }
+
+  int corrected_syndrome[MATRIX_SIZE];
+
+  if (tb_ff_rs_decode_raw(data, d_size, corrected_syndrome, corrected_coeffs, c_size) != SUCCESS) {
+    return !SUCCESS;
+  }
+
+  int exp_syndrome[MATRIX_SIZE] = {0};
+
+  if (memcmp(corrected_syndrome, exp_syndrome, s_size * sizeof(*corrected_syndrome)) != 0) {
+    return !SUCCESS;
+  }
+
+  return SUCCESS;
+}

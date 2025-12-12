@@ -124,4 +124,10 @@ int tb_ff_rs_encode(int coeffs[], int c_size, int data[], int d_size);
 // Returns SUCCESS on success
 int tb_ff_rs_decode_raw(int data[], int d_size, int syndrome[], int coeffs[], int c_size);
 
+// Decodes a list of Reed Solomon coefficients, with known error positions, into a list of data points
+// The x coordinates are the powers of 2
+// The error array is 1 for errors, and 0 otherwise
+// Returns SUCCESS on success
+int tb_ff_rs_decode_errors(int data[], int d_size, int errors[], int syndrome[], int coeffs[], int c_size);
+
 #endif

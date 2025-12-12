@@ -54,6 +54,8 @@ int check_tb_rs_encode();
 
 int check_tb_rs_decode_raw();
 
+int check_tb_rs_decode_error();
+
 int test_crypt_lib() {
   printf("Testing:  crypt_lib\n");
 
@@ -78,6 +80,7 @@ int test_crypt_lib() {
   pass &= check_tb_lagrange_general() == SUCCESS;
   pass &= check_tb_rs_encode() == SUCCESS;
   pass &= check_tb_rs_decode_raw() == SUCCESS;
+  pass &= check_tb_rs_decode_error() == SUCCESS;
 
   printf("crypt_lib: %s\n\n", pass ? "PASS" : "FAIL");
 
@@ -1164,4 +1167,76 @@ int check_tb_rs_decode_raw() {
   passes += pass;
 
   TB_TEST_END("tb_ff_rs_decode_raw:       ");
+}
+
+int check_tb_rs_decode_error() {
+  TB_TEST_START
+
+  tests++;
+
+  int pass = 1;
+
+  srand(223344);
+
+  for (int i = 0; i < 50; i++) {
+    int d_size = (i % 10) + 10;
+    int c_size = d_size + (i % 11);
+
+    int data[MATRIX_SIZE];
+
+    int s_size = c_size - d_size;
+
+    int e_size = rand() % (s_size + 1);
+
+    for (int j = 0; j < d_size; j++) {
+      data[j] = rand() % 1023;
+    }
+
+    int coeffs[MATRIX_SIZE];
+
+    if (tb_ff_rs_encode(coeffs, c_size, data, d_size) != SUCCESS) {
+      pass = 0;
+      break;
+    }
+
+    int errors[MATRIX_SIZE] = {0};
+    int error_count = 0;
+
+    for (int k = 0; k < e_size; k++) {
+      int index = rand() % c_size;
+      if (errors[index]) {
+        k--;
+        continue;
+      }
+      errors[index] = 1;
+      int coeff = rand() % 1023;
+      if (coeff == coeffs[index]) {
+        coeffs[index] = (coeffs[index] + 1) % 1023;;
+      } else {
+        coeffs[index] = coeff;
+      }
+    }
+
+    int inv_data[MATRIX_SIZE];
+    int syn[MATRIX_SIZE];
+    int exp_syn[MATRIX_SIZE] = {0};
+
+    if (tb_ff_rs_decode_raw(inv_data, d_size, syn, coeffs, c_size) != SUCCESS) {
+      pass = 0;
+      break;
+    }
+
+    if (tb_ff_rs_decode_errors(inv_data, d_size, errors, syn, coeffs, c_size) != SUCCESS) {
+      pass = 0;
+      break;
+    }
+
+    if (memcmp(data, inv_data, d_size * sizeof(*data)) != 0) {
+      return !SUCCESS;
+    }
+  }
+
+  passes += pass;
+
+  TB_TEST_END("tb_ff_rs_decode_error:     ");
 }
