@@ -323,6 +323,57 @@ int tb_ff_solve(int x[MATRIX_SIZE], int c[][MATRIX_SIZE], int y[MATRIX_SIZE], in
   return SUCCESS;
 }
 
+int tb_ff_create_polynomial(int coeffs[], int x[], int roots) {
+  memset(coeffs + 1, 0, roots * sizeof(*coeffs));
+  coeffs[0] = 1;
+
+  for (int i = 0; i < roots; i++) {
+    int neg_root = tb_ff_negate(x[i]);
+
+    for (int j = i + 1; j > 0; j--) {
+      coeffs[j] = coeffs[j - 1];
+    }
+    coeffs[0] = 0;
+
+    for (int j = 0; j <= i; j++) {
+      coeffs[j] = tb_ff_add(coeffs[j], tb_ff_mul(neg_root, coeffs[j + 1]));
+    }
+  }
+
+  return SUCCESS;
+}
+
+int tb_ff_solve_polynomial(int x[], int coeffs[], int roots) {
+  int size = roots + 1;
+
+  int pos = 0;
+
+  for (int i = 0; i < 1023; i++) {
+    int sum = 0;
+    int x_val = i;
+    int x_pow = 1;
+
+    for (int j = 0; j < size; j++) {
+      sum = tb_ff_add(sum, tb_ff_mul(x_pow, coeffs[j]));
+      x_pow = tb_ff_mul(x_pow, x_val);
+    }
+
+    if (sum == 0) {
+      if (pos >= roots) {
+        return !SUCCESS;
+      }
+
+      x[pos++] = x_val;
+    }
+  }
+
+  if (pos != roots) {
+    return !SUCCESS;
+  }
+
+  return SUCCESS;
+}
+
 int tb_ff_evaluate(int y[MATRIX_SIZE], int c[MATRIX_SIZE][MATRIX_SIZE], int x[MATRIX_SIZE], int size) {
   int c_copy[MATRIX_SIZE][MATRIX_SIZE + 1];
 

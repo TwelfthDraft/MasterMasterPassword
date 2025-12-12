@@ -34,6 +34,10 @@ int check_tb_prompt_word();
 
 int check_tb_ff_properties();
 
+int check_tb_ff_create_polynomial();
+
+int check_tb_ff_solve_polynomial();
+
 int check_tb_ff_evaluate();
 
 int check_tb_ff_solve();
@@ -64,6 +68,8 @@ int test_crypt_lib() {
   pass &= check_tb_find_word() == SUCCESS;
   pass &= check_tb_prompt_word() == SUCCESS;
   pass &= check_tb_ff_properties() == SUCCESS;
+  pass &= check_tb_ff_create_polynomial() == SUCCESS;
+  pass &= check_tb_ff_solve_polynomial() == SUCCESS;
   pass &= check_tb_ff_evaluate() == SUCCESS;
   pass &= check_tb_ff_solve() == SUCCESS;
   pass &= check_tb_inv_lagrange() == SUCCESS;
@@ -627,6 +633,133 @@ int check_tb_ff_properties() {
   passes += pass;
 
   TB_TEST_END("tb_ff_properties:          ");
+}
+
+int check_tb_ff_create_polynomial() {
+  TB_TEST_START
+
+  tests++;
+
+  int pass = 1;
+
+  srand(887766);
+
+  for (int i = 0; pass && i < 50; i++) {
+    int roots = (i % 10) + 10;
+
+    int x[MATRIX_SIZE];
+
+    for (int j = 0; j < roots; j++) {
+      x[j] = rand() % 1023;
+      for (int k = 0; k < j; k++) {
+        if (x[k] == x[j]) {
+          j--;
+          break;
+        }
+      }
+    }
+
+    int coeffs[MATRIX_SIZE];
+
+    if (tb_ff_create_polynomial(coeffs, x, roots) != SUCCESS) {
+      pass = 0;
+      break;
+    }
+
+    int root_count = 0;
+
+    for (int j = 0; j < 1023; j++) {
+      int sum = 0;
+      int x_val = j;
+      int x_pow = 1;
+      for (int k = 0; k <= roots; k++) {
+        sum = tb_ff_add(sum, tb_ff_mul(x_pow, coeffs[k]));
+        x_pow = tb_ff_mul(x_pow, x_val);
+      }
+      if (sum == 0) {
+        root_count++;
+        int match = 0;
+        for (int k = 0; k < roots; k++) {
+          if (x[k] == x_val) {
+            match = 1;
+            break;
+          }
+        }
+        if (!match) {
+          pass = 0;
+          break;
+        }
+      }
+    }
+
+    if (root_count != roots) {
+      pass = 0;
+      break;
+    }
+  }
+
+  passes += pass;
+
+  TB_TEST_END("tb_ff_create_polynomial:   ");
+}
+
+int check_tb_ff_solve_polynomial() {
+  TB_TEST_START
+
+  tests++;
+
+  int pass = 1;
+
+  srand(443322);
+
+  for (int i = 0; pass && i < 50; i++) {
+    int roots = (i % 10) + 10;
+
+    int x[MATRIX_SIZE];
+
+    for (int j = 0; j < roots; j++) {
+      x[j] = rand() % 1023;
+      for (int k = 0; k < j; k++) {
+        if (x[k] == x[j]) {
+          j--;
+          break;
+        }
+      }
+    }
+
+    int coeffs[MATRIX_SIZE];
+
+    if (tb_ff_create_polynomial(coeffs, x, roots) != SUCCESS) {
+      pass = 0;
+      break;
+    }
+
+    int inv_x[MATRIX_SIZE];
+
+    if (tb_ff_solve_polynomial(inv_x, coeffs, roots) != SUCCESS) {
+      pass = 0;
+      break;
+    }
+
+    for (int j = 0; j < roots; j++) {
+      int x_val = x[j];
+      int match = 0;
+      for (int k = 0; k < roots; k++) {
+        if (x_val == inv_x[k]) {
+          match = 1;
+          break;
+        }
+      }
+      if (!match) {
+        pass = 0;
+        break;
+      }
+    }
+  }
+
+  passes += pass;
+
+  TB_TEST_END("tb_ff_solve_polynomial:    ");
 }
 
 int check_tb_ff_evaluate() {

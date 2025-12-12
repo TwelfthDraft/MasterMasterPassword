@@ -77,6 +77,17 @@ int tb_ff_log2(int a);
 // Returns SUCCESS if a solution is found
 int tb_ff_solve(int x[MATRIX_SIZE], int c[][MATRIX_SIZE], int y[MATRIX_SIZE], int size);
 
+// Finds the coefficients for a polynomial given a set of roots
+// Note: the coeff array has roots + 1 elements
+// Returns SUCCESS on success
+int tb_ff_create_polynomial(int coeffs[], int x[], int roots);
+
+// Finds solutions to a polynomial by exhaustive search
+// Find all values for x such that x is a root of the polynomial
+// Note: the coeff array has roots + 1 elements
+// Returns SUCCESS on success
+int tb_ff_solve_polynomial(int x[], int coeffs[], int roots);
+
 // Evaluates a matrix multiply
 // Find Y where Y = C * X
 // Returns SUCCESS if a solution is found
