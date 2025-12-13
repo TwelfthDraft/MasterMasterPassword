@@ -130,4 +130,9 @@ int tb_ff_rs_decode_raw(int data[], int d_size, int syndrome[], int coeffs[], in
 // Returns SUCCESS on success
 int tb_ff_rs_decode_errors(int data[], int d_size, int errors[], int syndrome[], int coeffs[], int c_size);
 
+// Finds the locations of the errors for Reed Solomon decoding
+// The x coordinates are powers of 2
+// Returns SUCCESS on success
+int tb_ff_rs_find_locations(int d_size, int* error_count, int errors[], int syndrome[], int coeffs[], int c_size);
+
 #endif

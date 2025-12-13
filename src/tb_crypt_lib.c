@@ -559,3 +559,62 @@ int tb_ff_rs_decode_errors(int data[], int d_size, int errors[], int syndrome[],
 
   return SUCCESS;
 }
+
+int tb_ff_rs_find_locations(int d_size, int* error_count, int error_locations[], int syndrome[], int coeffs[], int c_size) {
+  if (c_size < d_size) {
+    return !SUCCESS;
+  }
+
+  int s_size = c_size - d_size;
+
+  int exp_syndrome[MATRIX_SIZE] = {0};
+
+  if (memcmp(syndrome, exp_syndrome, s_size * sizeof(*syndrome)) == 0) {
+    *error_count = 0;
+    return SUCCESS;
+  }
+
+  int max_errors = s_size / 2;
+
+  int c[MATRIX_SIZE][MATRIX_SIZE];
+
+  for (int row = 0; row < max_errors; row++) {
+    for (int col = 0; col < max_errors; col++) {
+      c[row][col] = syndrome[row + col];
+    }
+  }
+
+  int alpha[MATRIX_SIZE];
+
+  for (int e = max_errors; e > 0; e--) {
+    int neg_syndrome[MATRIX_SIZE];
+    for (int i = e; i < s_size; i++) {
+      neg_syndrome[i - e] = tb_ff_negate(syndrome[i]);
+    }
+
+    if (tb_ff_solve(alpha, c, neg_syndrome, e) != SUCCESS) {
+      continue;
+    }
+
+    int alpha_rev[MATRIX_SIZE];
+    alpha_rev[0] = 1;
+    for (int i = 0; i < e; i++) {
+      alpha_rev[e - i] = alpha[i];
+    }
+
+    int roots[MATRIX_SIZE];
+
+    if (tb_ff_solve_polynomial(roots, alpha_rev, e) != SUCCESS) {
+      return !SUCCESS;
+    }
+
+    for (int i = 0; i < e; i++) {
+      error_locations[i] = tb_ff_log2(tb_ff_inverse(roots[i]));
+    }
+
+    *error_count = e;
+    return SUCCESS;
+  }
+
+  return !SUCCESS;
+}

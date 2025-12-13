@@ -56,6 +56,8 @@ int check_tb_rs_decode_raw();
 
 int check_tb_rs_decode_error();
 
+int check_tb_rs_find_locations();
+
 int test_crypt_lib() {
   printf("Testing:  crypt_lib\n");
 
@@ -81,6 +83,7 @@ int test_crypt_lib() {
   pass &= check_tb_rs_encode() == SUCCESS;
   pass &= check_tb_rs_decode_raw() == SUCCESS;
   pass &= check_tb_rs_decode_error() == SUCCESS;
+  pass &= check_tb_rs_find_locations() == SUCCESS;
 
   printf("crypt_lib: %s\n\n", pass ? "PASS" : "FAIL");
 
@@ -1123,7 +1126,7 @@ int check_tb_rs_decode_raw() {
 
   int pass = 1;
 
-  srand(334455);
+  srand(446688);
 
   for (int i = 0; i < 50; i++) {
     int d_size = (i % 10) + 10;
@@ -1239,4 +1242,101 @@ int check_tb_rs_decode_error() {
   passes += pass;
 
   TB_TEST_END("tb_ff_rs_decode_error:     ");
+}
+
+int check_tb_rs_find_locations() {
+  TB_TEST_START
+
+  tests++;
+
+  int pass = 1;
+
+  srand(335577);
+
+  for (int i = 0; i < 50; i++) {
+    int d_size = (i % 10) + 10;
+    int c_size = d_size + (i % 11);
+
+    int data[MATRIX_SIZE];
+
+    int s_size = c_size - d_size;
+
+    int e_size = rand() % (1 + (s_size / 2));
+
+    for (int j = 0; j < d_size; j++) {
+      data[j] = rand() % 1023;
+    }
+
+    int coeffs[MATRIX_SIZE];
+
+    if (tb_ff_rs_encode(coeffs, c_size, data, d_size) != SUCCESS) {
+      pass = 0;
+      break;
+    }
+
+    int errors[MATRIX_SIZE] = {0};
+    int error_count = 0;
+
+    for (int k = 0; k < e_size; k++) {
+      int index = rand() % c_size;
+      if (errors[index]) {
+        k--;
+        continue;
+      }
+
+      errors[index] = 1;
+
+      int coeff = rand() % 1023;
+      if (coeff == coeffs[index]) {
+        coeffs[index] = (coeffs[index] + 1) % 1023;;
+      } else {
+        coeffs[index] = coeff;
+      }
+    }
+
+    int inv_data[MATRIX_SIZE];
+    int syn[MATRIX_SIZE];
+    int exp_syn[MATRIX_SIZE] = {0};
+
+    if (tb_ff_rs_decode_raw(inv_data, d_size, syn, coeffs, c_size) != SUCCESS) {
+      pass = 0;
+      break;
+    }
+
+    int found_error_count;
+    int found_errors[MATRIX_SIZE];
+
+    if (tb_ff_rs_find_locations(d_size, &found_error_count, found_errors, syn, coeffs, c_size) != SUCCESS) {
+      pass = 0;
+      break;
+    }
+
+    if (found_error_count != e_size) {
+      pass = 0;
+      break;
+    }
+
+    int matches = 0;
+    for (int k = 0; k < 1024; k++) {
+      if (errors[k]) {
+        int match = 0;
+        for (int m = 0; m < e_size; m++) {
+          if (found_errors[m] == k) {
+            match = 1;
+            break;
+          }
+        }
+        matches += match;
+      }
+    }
+
+    if (matches != e_size) {
+      pass = 0;
+      break;
+    }
+  }
+
+  passes += pass;
+
+  TB_TEST_END("tb_ff_rs_find_locations:   ");
 }
