@@ -657,6 +657,10 @@ int check_tb_ff_create_polynomial() {
 
     for (int j = 0; j < roots; j++) {
       x[j] = rand() % 1023;
+      if (x[j] == 0) {
+        j--;
+        continue;
+      }
       for (int k = 0; k < j; k++) {
         if (x[k] == x[j]) {
           j--;
@@ -668,6 +672,11 @@ int check_tb_ff_create_polynomial() {
     int coeffs[MATRIX_SIZE];
 
     if (tb_ff_create_polynomial(coeffs, x, roots) != SUCCESS) {
+      pass = 0;
+      break;
+    }
+
+    if (coeffs[0] != 1) {
       pass = 0;
       break;
     }
@@ -725,6 +734,10 @@ int check_tb_ff_solve_polynomial() {
 
     for (int j = 0; j < roots; j++) {
       x[j] = rand() % 1023;
+      if (x[j] == 0) {
+        j--;
+        continue;
+      }
       for (int k = 0; k < j; k++) {
         if (x[k] == x[j]) {
           j--;

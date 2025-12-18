@@ -340,6 +340,15 @@ int tb_ff_create_polynomial(int coeffs[], int x[], int roots) {
     }
   }
 
+  if (coeffs[0] == 0) {
+    return !SUCCESS;
+  }
+
+  int c0_inv = tb_ff_inverse(coeffs[0]);
+  for (int i = 0; i <= roots; i++) {
+    coeffs[i]  = tb_ff_mul(coeffs[i], c0_inv);
+  }
+
   return SUCCESS;
 }
 
