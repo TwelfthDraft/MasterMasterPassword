@@ -1333,7 +1333,7 @@ int check_tb_rs_find_locations() {
     }
 
     int matches = 0;
-    for (int k = 0; k < 1024; k++) {
+    for (int k = 0; k < c_size; k++) {
       if (errors[k]) {
         int match = 0;
         for (int m = 0; m < e_size; m++) {
@@ -1460,7 +1460,7 @@ int check_tb_rs_find_locations_mixed() {
     }
 
     int matches = 0;
-    for (int k = 0; k < 1024; k++) {
+    for (int k = 0; k < c_size; k++) {
       if (errors[k] || erasures[k]) {
         int match = 0;
         for (int m = 0; m < found_error_count; m++) {

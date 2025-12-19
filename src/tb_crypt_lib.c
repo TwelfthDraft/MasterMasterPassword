@@ -634,12 +634,12 @@ int tb_ff_rs_find_locations_mixed(int d_size, int* error_count, int error_locati
 
   for (int e = max_errors; e > 0; e--) {
     int neg_syndrome[MATRIX_SIZE];
-    for (int i = e; i < s_size; i++) {
+    for (int i = 0; i < e; i++) {
       int syn_sum = 0;
       for (int j = 0; j <= erasure_count; j++) {
-        syn_sum = tb_ff_add(syn_sum, tb_ff_mul(syndrome[i + erasure_count - j], alpha[j]));
+        syn_sum = tb_ff_add(syn_sum, tb_ff_mul(syndrome[i + e + erasure_count - j], alpha[j]));
       }
-      neg_syndrome[i - e] = tb_ff_negate(syn_sum);
+      neg_syndrome[i] = tb_ff_negate(syn_sum);
     }
 
     if (tb_ff_solve(beta, c, neg_syndrome, e) != SUCCESS) {
