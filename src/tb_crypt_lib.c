@@ -570,50 +570,91 @@ int tb_ff_rs_decode_errors(int data[], int d_size, int errors[], int syndrome[],
 }
 
 int tb_ff_rs_find_locations(int d_size, int* error_count, int error_locations[], int syndrome[], int coeffs[], int c_size) {
+  return tb_ff_rs_find_locations_mixed(d_size, error_count, error_locations, 0, NULL, syndrome, coeffs, c_size);
+}
+
+int tb_ff_rs_find_locations_mixed(int d_size, int* error_count, int error_locations[], int erasure_count, int erasure_locations[], int syndrome[], int coeffs[], int c_size) {
   if (c_size < d_size) {
     return !SUCCESS;
   }
 
   int s_size = c_size - d_size;
 
-  int exp_syndrome[MATRIX_SIZE] = {0};
-
-  if (memcmp(syndrome, exp_syndrome, s_size * sizeof(*syndrome)) == 0) {
-    *error_count = 0;
-    return SUCCESS;
+  if (erasure_count > s_size) {
+    return !SUCCESS;
   }
 
-  int max_errors = s_size / 2;
-
-  int c[MATRIX_SIZE][MATRIX_SIZE];
-
-  for (int row = 0; row < max_errors; row++) {
-    for (int col = 0; col < max_errors; col++) {
-      c[row][col] = syndrome[row + col];
+  if (erasure_count != 0) {
+    int errors[MATRIX_SIZE] = {0};
+    for (int i = 0; i < erasure_count; i++) {
+      errors[erasure_locations[i]] = 1;
+    }
+    int data[MATRIX_SIZE];
+    if (tb_ff_rs_decode_errors(data, d_size, errors, syndrome, coeffs, c_size) == SUCCESS) {
+      *error_count = erasure_count;
+      for (int i = 0; i < erasure_count; i++) {
+        error_locations[i] = erasure_locations[i];
+      }
+      return SUCCESS;
+    }
+  } else {
+    int exp_syndrome[MATRIX_SIZE] = {0};
+    if (memcmp(syndrome, exp_syndrome, s_size * sizeof(*syndrome)) == 0) {
+      *error_count = 0;
+      return SUCCESS;
     }
   }
 
+  int erasure_inverses[MATRIX_SIZE];
+  for (int i = 0; i < erasure_count; i++) {
+    erasure_inverses[i] = tb_ff_inverse(tb_ff_pow2(erasure_locations[i]));
+  }
+
+  // Erasure polynomial
   int alpha[MATRIX_SIZE];
+
+  if (tb_ff_create_polynomial(alpha, erasure_inverses, erasure_count) != SUCCESS) {
+    return !SUCCESS;
+  }
+
+  int max_errors = (s_size - erasure_count) / 2;
+
+  int c[MATRIX_SIZE][MATRIX_SIZE];
+  for (int row = 0; row < max_errors; row++) {
+    for (int col = 0; col < max_errors; col++) {
+      c[row][col] = 0;
+      for (int i = 0; i <= erasure_count; i++) {
+        c[row][col] = tb_ff_add(c[row][col], tb_ff_mul(alpha[erasure_count - i], syndrome[row + col + i]));
+      }
+    }
+  }
+
+  // Error polynomial
+  int beta[MATRIX_SIZE];
 
   for (int e = max_errors; e > 0; e--) {
     int neg_syndrome[MATRIX_SIZE];
     for (int i = e; i < s_size; i++) {
-      neg_syndrome[i - e] = tb_ff_negate(syndrome[i]);
+      int syn_sum = 0;
+      for (int j = 0; j <= erasure_count; j++) {
+        syn_sum = tb_ff_add(syn_sum, tb_ff_mul(syndrome[i + erasure_count - j], alpha[j]));
+      }
+      neg_syndrome[i - e] = tb_ff_negate(syn_sum);
     }
 
-    if (tb_ff_solve(alpha, c, neg_syndrome, e) != SUCCESS) {
+    if (tb_ff_solve(beta, c, neg_syndrome, e) != SUCCESS) {
       continue;
     }
 
-    int alpha_rev[MATRIX_SIZE];
-    alpha_rev[0] = 1;
+    int beta_rev[MATRIX_SIZE];
+    beta_rev[0] = 1;
     for (int i = 0; i < e; i++) {
-      alpha_rev[e - i] = alpha[i];
+      beta_rev[e - i] = beta[i];
     }
 
     int roots[MATRIX_SIZE];
 
-    if (tb_ff_solve_polynomial(roots, alpha_rev, e) != SUCCESS) {
+    if (tb_ff_solve_polynomial(roots, beta_rev, e) != SUCCESS) {
       return !SUCCESS;
     }
 
@@ -621,7 +662,11 @@ int tb_ff_rs_find_locations(int d_size, int* error_count, int error_locations[],
       error_locations[i] = tb_ff_log2(tb_ff_inverse(roots[i]));
     }
 
-    *error_count = e;
+    for (int i = 0; i < erasure_count; i++) {
+      error_locations[i + e] = erasure_locations[i];
+    }
+
+    *error_count = e + erasure_count;
     return SUCCESS;
   }
 

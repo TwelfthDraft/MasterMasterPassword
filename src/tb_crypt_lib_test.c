@@ -58,6 +58,8 @@ int check_tb_rs_decode_error();
 
 int check_tb_rs_find_locations();
 
+int check_tb_rs_find_locations_mixed();
+
 int test_crypt_lib() {
   printf("Testing:  crypt_lib\n");
 
@@ -84,6 +86,7 @@ int test_crypt_lib() {
   pass &= check_tb_rs_decode_raw() == SUCCESS;
   pass &= check_tb_rs_decode_error() == SUCCESS;
   pass &= check_tb_rs_find_locations() == SUCCESS;
+  pass &= check_tb_rs_find_locations_mixed() == SUCCESS;
 
   printf("crypt_lib: %s\n\n", pass ? "PASS" : "FAIL");
 
@@ -120,7 +123,7 @@ int check_tb_new_digest() {
 
   passes += pass;
 
-  TB_TEST_END("tb_new_digest:             ");
+  TB_TEST_END("tb_new_digest:                 ");
 }
 
 int check_tb_digest_to_hex() {
@@ -134,7 +137,7 @@ int check_tb_digest_to_hex() {
     check_tb_digest_to_hex_single(&tests, &passes, lengths[i]);
   }
 
-  TB_TEST_END("tb_digest_to_hex:          ");
+  TB_TEST_END("tb_digest_to_hex:              ");
 }
 
 int check_tb_digest_to_hex_single(int* tests, int* passes, int length) {
@@ -190,7 +193,7 @@ int check_tb_hex_to_digest() {
     }
   }
 
-  TB_TEST_END("tb_hex_to_digest:          ");
+  TB_TEST_END("tb_hex_to_digest:              ");
 }
 
 int check_tb_hex_to_digest_single(int* tests, int* passes, int length, int hex_only) {
@@ -281,7 +284,7 @@ int check_tb_text_to_digest() {
 
   passes += pass;
 
-  TB_TEST_END("tb_text_to_digest:         ");
+  TB_TEST_END("tb_text_to_digest:             ");
 }
 
 int check_tb_mix_digests() {
@@ -325,7 +328,7 @@ int check_tb_mix_digests() {
 
   passes += pass;
 
-  TB_TEST_END("tb_mix_digests:            ");
+  TB_TEST_END("tb_mix_digests:                ");
 }
 
 int check_tb_get_word() {
@@ -352,7 +355,7 @@ int check_tb_get_word() {
 
   passes += pass;
 
-  TB_TEST_END("tb_get_word:               ");
+  TB_TEST_END("tb_get_word:                   ");
 }
 
 int check_tb_find_word() {
@@ -397,7 +400,7 @@ int check_tb_find_word() {
 
   passes += pass;
 
-  TB_TEST_END("tb_find_word:              ");
+  TB_TEST_END("tb_find_word:                  ");
 }
 
 int check_tb_prompt_word() {
@@ -538,7 +541,7 @@ int check_tb_prompt_word() {
 
   passes += pass;
 
-  TB_TEST_END("tb_prompt_word:            ");
+  TB_TEST_END("tb_prompt_word:                ");
 }
 
 int check_tb_ff_properties() {
@@ -638,7 +641,7 @@ int check_tb_ff_properties() {
 
   passes += pass;
 
-  TB_TEST_END("tb_ff_properties:          ");
+  TB_TEST_END("tb_ff_properties:              ");
 }
 
 int check_tb_ff_create_polynomial() {
@@ -715,7 +718,7 @@ int check_tb_ff_create_polynomial() {
 
   passes += pass;
 
-  TB_TEST_END("tb_ff_create_polynomial:   ");
+  TB_TEST_END("tb_ff_create_polynomial:       ");
 }
 
 int check_tb_ff_solve_polynomial() {
@@ -778,7 +781,7 @@ int check_tb_ff_solve_polynomial() {
 
   passes += pass;
 
-  TB_TEST_END("tb_ff_solve_polynomial:    ");
+  TB_TEST_END("tb_ff_solve_polynomial:        ");
 }
 
 int check_tb_ff_evaluate() {
@@ -831,7 +834,7 @@ int check_tb_ff_evaluate() {
 
   passes += pass;
 
-  TB_TEST_END("tb_ff_evaluate:            ");
+  TB_TEST_END("tb_ff_evaluate:                ");
 }
 
 int check_tb_ff_solve() {
@@ -879,7 +882,7 @@ int check_tb_ff_solve() {
 
   passes += pass;
 
-  TB_TEST_END("tb_ff_solve:               ");
+  TB_TEST_END("tb_ff_solve:                   ");
 }
 
 int check_tb_inv_lagrange() {
@@ -927,7 +930,7 @@ int check_tb_inv_lagrange() {
 
   passes += pass;
 
-  TB_TEST_END("tb_ff_inv_lagrange:        ");
+  TB_TEST_END("tb_ff_inv_lagrange:            ");
 }
 
 int check_tb_lagrange() {
@@ -970,7 +973,7 @@ int check_tb_lagrange() {
 
   passes += pass;
 
-  TB_TEST_END("tb_ff_lagrange:            ");
+  TB_TEST_END("tb_ff_lagrange:                ");
 }
 
 int check_tb_inv_lagrange_general() {
@@ -1027,7 +1030,7 @@ int check_tb_inv_lagrange_general() {
 
   passes += pass;
 
-  TB_TEST_END("tb_ff_inv_lagrange_general:");
+  TB_TEST_END("tb_ff_inv_lagrange_general:    ");
 }
 
 int check_tb_lagrange_general() {
@@ -1078,7 +1081,7 @@ int check_tb_lagrange_general() {
 
   passes += pass;
 
-  TB_TEST_END("tb_ff_lagrange_general:    ");
+  TB_TEST_END("tb_ff_lagrange_general:        ");
 }
 
 int check_tb_rs_encode() {
@@ -1129,7 +1132,7 @@ int check_tb_rs_encode() {
 
   passes += pass;
 
-  TB_TEST_END("tb_ff_rs_encode:           ");
+  TB_TEST_END("tb_ff_rs_encode:               ");
 }
 
 int check_tb_rs_decode_raw() {
@@ -1182,7 +1185,7 @@ int check_tb_rs_decode_raw() {
 
   passes += pass;
 
-  TB_TEST_END("tb_ff_rs_decode_raw:       ");
+  TB_TEST_END("tb_ff_rs_decode_raw:           ");
 }
 
 int check_tb_rs_decode_error() {
@@ -1254,7 +1257,7 @@ int check_tb_rs_decode_error() {
 
   passes += pass;
 
-  TB_TEST_END("tb_ff_rs_decode_error:     ");
+  TB_TEST_END("tb_ff_rs_decode_error:         ");
 }
 
 int check_tb_rs_find_locations() {
@@ -1351,5 +1354,132 @@ int check_tb_rs_find_locations() {
 
   passes += pass;
 
-  TB_TEST_END("tb_ff_rs_find_locations:   ");
+  TB_TEST_END("tb_ff_rs_find_locations:       ");
+}
+
+int check_tb_rs_find_locations_mixed() {
+  TB_TEST_START
+
+  tests++;
+
+  int pass = 1;
+
+  srand(345567);
+
+  for (int i = 0; i < 50; i++) {
+    int d_size = (i % 10) + 10;
+    int c_size = d_size + 5 + (i % 11);
+
+    int data[MATRIX_SIZE];
+
+    int s_size = c_size - d_size;
+
+    int error_size = rand() % (1 + (s_size / 2));
+    int erasure_size = rand() % (1 + (s_size / 2));
+
+    while (error_size * 2 + erasure_size > s_size || (error_size + erasure_size == 0 && s_size != 0)) {
+      error_size = rand() % (1 + (s_size / 2));
+      erasure_size = rand() % (1 + s_size);
+    }
+
+    if ((rand() % 10) == 0) {
+      error_size = 0;
+      erasure_size = 0;
+    }
+
+    for (int j = 0; j < d_size; j++) {
+      data[j] = rand() % 1023;
+    }
+
+    int coeffs[MATRIX_SIZE];
+
+    if (tb_ff_rs_encode(coeffs, c_size, data, d_size) != SUCCESS) {
+      pass = 0;
+      break;
+    }
+
+    int errors[MATRIX_SIZE] = {0};
+    int erasures[MATRIX_SIZE] = {0};
+    int erasure_locations[MATRIX_SIZE] = {0};
+
+    for (int k = 0; k < error_size; k++) {
+      int index = rand() % c_size;
+      if (errors[index]) {
+        k--;
+        continue;
+      }
+
+      errors[index] = 1;
+
+      int coeff = rand() % 1023;
+      if (coeff == coeffs[index]) {
+        coeffs[index] = (coeffs[index] + 1) % 1023;;
+      } else {
+        coeffs[index] = coeff;
+      }
+    }
+
+    for (int k = 0; k < erasure_size; k++) {
+      int index = rand() % c_size;
+      if (errors[index] || erasures[index]) {
+        k--;
+        continue;
+      }
+
+      erasures[index] = 1;
+      erasure_locations[k] = index;
+
+      int coeff = rand() % 1023;
+      if (coeff == coeffs[index]) {
+        coeffs[index] = (coeffs[index] + 1) % 1023;;
+      } else {
+        coeffs[index] = coeff;
+      }
+    }
+
+    int inv_data[MATRIX_SIZE];
+    int syn[MATRIX_SIZE];
+    int exp_syn[MATRIX_SIZE] = {0};
+
+    if (tb_ff_rs_decode_raw(inv_data, d_size, syn, coeffs, c_size) != SUCCESS) {
+      pass = 0;
+      break;
+    }
+
+    int found_error_count;
+    int found_errors[MATRIX_SIZE];
+
+    if (tb_ff_rs_find_locations_mixed(d_size, &found_error_count, found_errors, erasure_size, erasure_locations, syn, coeffs, c_size) != SUCCESS) {
+      pass = 0;
+      break;
+    }
+
+    if (found_error_count != error_size + erasure_size) {
+      pass = 0;
+      break;
+    }
+
+    int matches = 0;
+    for (int k = 0; k < 1024; k++) {
+      if (errors[k] || erasures[k]) {
+        int match = 0;
+        for (int m = 0; m < found_error_count; m++) {
+          if (found_errors[m] == k) {
+            match = 1;
+            break;
+          }
+        }
+        matches += match;
+      }
+    }
+
+    if (matches != error_size + erasure_size) {
+      pass = 0;
+      break;
+    }
+  }
+
+  passes += pass;
+
+  TB_TEST_END("tb_ff_rs_find_locations_mixed: ");
 }
